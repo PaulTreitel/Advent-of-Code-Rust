@@ -8,6 +8,10 @@ pub fn part_two(input: &str) -> Option<u32> {
     None
 }
 
+fn parse_input(input: &str) -> () {
+    todo!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
