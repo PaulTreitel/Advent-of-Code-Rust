@@ -25,7 +25,7 @@ pub fn part_two(input: &str) -> Option<u32> {
     Some(similarity)
 }
 
-fn create_occurence_table(lst: &Vec<u32>) -> HashMap<u32, u32> {
+fn create_occurence_table(lst: &[u32]) -> HashMap<u32, u32> {
     let mut table = HashMap::new();
     for num in lst {
         if table.contains_key(num) {
@@ -42,9 +42,8 @@ fn split_convert_lists(input: &str) -> (Vec<u32>, Vec<u32>) {
     let mut list2 = Vec::new();
     let lines = input.lines();
     for line in lines {
-        let nums: Vec<&str> = line.split_ascii_whitespace()
-            .collect();
-        let num1 = nums.get(0).unwrap().parse::<u32>().unwrap();
+        let nums: Vec<&str> = line.split_ascii_whitespace().collect();
+        let num1 = nums.first().unwrap().parse::<u32>().unwrap();
         let num2 = nums.get(1).unwrap().parse::<u32>().unwrap();
         list1.push(num1);
         list2.push(num2);
