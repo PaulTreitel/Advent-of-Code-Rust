@@ -1,19 +1,14 @@
 advent_of_code_2022::solution!(5);
 
-pub enum RunType {
-    Test,
-    Final
-}
-
 struct ProcedureStep {
     num_boxes: i32,
     start_stack: usize,
     end_stack: usize
 }
 
-pub fn part_one(input: &str, input_type: RunType) {
+pub fn part_one(input: &str) -> Option<String> {
     let mut result = String::new();
-    let mut stacks = get_stacks(input_type);
+    let mut stacks = get_stacks(input);
     let steps = get_steps(&input);
     for step in steps {
         for _ in 0..step.num_boxes {
@@ -24,12 +19,12 @@ pub fn part_one(input: &str, input_type: RunType) {
     for stack in stacks {
         result.push(*stack.get(stack.len() - 1).unwrap());
     }
-    println!("{}", result);
+    Some(result)
 }
 
-pub fn part_two(input: &str, input_type: RunType) {
+pub fn part_two(input: &str) -> Option<String> {
     let mut result = String::new();
-    let mut stacks = get_stacks(input_type);
+    let mut stacks = get_stacks(input);
     let steps = get_steps(&input);
     for step in steps {
         let mut temp_stack: Vec<char> = Vec::new();
@@ -43,7 +38,7 @@ pub fn part_two(input: &str, input_type: RunType) {
     for stack in stacks {
         result.push(*stack.get(stack.len() - 1).unwrap());
     }
-    println!("{}", result);
+    Some(result)
 }
 
 fn get_steps(input: &str) -> Vec<ProcedureStep> {
@@ -61,14 +56,15 @@ fn get_steps(input: &str) -> Vec<ProcedureStep> {
     steps
 }
 
-fn get_stacks(input_type: RunType) -> Vec<Vec<char>> {
-    match input_type {
-        RunType::Test => vec![
+fn get_stacks(input: &str) -> Vec<Vec<char>> {
+    if input.len() < 100 {
+        vec![
             vec!['Z', 'N'],
             vec!['M', 'C', 'D'],
             vec!['P']
-        ],
-        RunType::Final => vec![
+        ]
+    } else {
+        vec![
             vec!['Q', 'S', 'W', 'C', 'Z', 'V', 'F', 'T'],
             vec!['Q', 'R', 'B'],
             vec!['B', 'Z', 'T', 'Q', 'P', 'M', 'S'],
@@ -82,8 +78,21 @@ fn get_stacks(input_type: RunType) -> Vec<Vec<char>> {
     }
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    part_one(&input, RunType::Final);
-    part_two(&input, RunType::Final);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_one() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_one(&input);
+        assert_eq!(result, Some("CMZ".to_string()));
+    }
+
+    #[test]
+    fn test_part_two() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_two(&input);
+        assert_eq!(result, Some("MCD".to_string()));
+    }
 }

@@ -47,25 +47,20 @@ fn are_unique(chars: (char, char, char, char)) -> bool {
     !(char0_match || char1_match || char2_match)
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(&input).unwrap();
-    println!("{}", res);
-    let res = part_two(&input).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input), Some(7)); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some(7));
     }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input), Some(19)); // fill in
+        let result = part_two(&input);
+        assert_eq!(result, Some(19));
     }
 }

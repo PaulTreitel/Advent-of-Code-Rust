@@ -17,7 +17,8 @@ struct Beacon {
     y: i32,
 }
 
-pub fn part_one(is_real: bool) -> Option<i32> {
+pub fn part_one(input: &str) -> Option<i32> {
+    let is_real = input.len() > 1000;
     let sensors = get_input(is_real);
     let (sensors, beacons) = input_to_sensor_ranges(sensors);
     let (min_out, max_out) = get_furthest_out(&sensors);
@@ -31,7 +32,8 @@ pub fn part_one(is_real: bool) -> Option<i32> {
     Some(count)
 }
 
-pub fn part_two(is_real: bool) -> Option<u64> {
+pub fn part_two(input: &str) -> Option<u64> {
+    let is_real = input.len() > 1000;
     let sensors = get_input(is_real);
     let (sensors, _) = input_to_sensor_ranges(sensors);
     let max_coord = get_max_coord(is_real);
@@ -199,25 +201,20 @@ fn get_input(is_real: bool) -> Vec<(Sensor, Beacon)> {
     }
 }
 
-fn main() {
-    // let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(true).unwrap();
-    println!("{}", res);
-    let res = part_two(true).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
-        // let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(false), Some(26)); // fill in
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_one(&input);
+        assert_eq!(result, Some(26));
     }
+
     #[test]
     fn test_part_two() {
-        // let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(false), Some(56000011)); // fill in
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_two(&input);
+        assert_eq!(result, Some(56000011));
     }
 }

@@ -1,6 +1,6 @@
 advent_of_code_2022::solution!(4);
 
-pub fn part_one(input: &str) {
+pub fn part_one(input: &str) -> Option<i32> {
     let mut num_fully_overlapping = 0;
     for line in input.lines() {
         let mut elf_ranges = line.split(",");
@@ -10,10 +10,10 @@ pub fn part_one(input: &str) {
             num_fully_overlapping += 1;
         }
     }
-    println!("{}", num_fully_overlapping);
+    Some(num_fully_overlapping)
 }
 
-pub fn part_two(input: &str) {
+pub fn part_two(input: &str) -> Option<i32> {
     let mut num_overlapping = 0;
     for line in input.lines() {
         let mut elf_ranges = line.split(",");
@@ -23,7 +23,7 @@ pub fn part_two(input: &str) {
             num_overlapping += 1;
         }
     }
-    println!("{}", num_overlapping);
+    Some(num_overlapping)
 }
 
 fn get_elf_range(range: &str) -> (i32, i32) {
@@ -41,8 +41,20 @@ fn elf_range_overlaps(elf1: (i32, i32), elf2: (i32, i32)) -> bool {
     (elf1.1 >= elf2.0 && elf1.0 <= elf2.1) || (elf2.1 >= elf1.0 && elf2.0 <= elf1.1)
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    part_one(&input);
-    part_two(&input);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_part_one() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_one(&input);
+        assert_eq!(result, Some(2));
+    }
+
+    #[test]
+    fn test_part_two() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_two(&input);
+        assert_eq!(result, Some(4));
+    }
 }

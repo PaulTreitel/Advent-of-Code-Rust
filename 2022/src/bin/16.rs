@@ -134,25 +134,20 @@ fn get_graph(
     (start, graph)
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    // let res = part_one(&input).unwrap();
-    // println!("{}", res);
-    let res = part_two(&input).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input), Some(1651)); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some(1651));
     }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input), Some(1707)); // fill in
+        let result = part_two(&input);
+        assert_eq!(result, Some(1707));
     }
 }

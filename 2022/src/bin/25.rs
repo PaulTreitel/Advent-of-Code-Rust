@@ -113,25 +113,13 @@ fn snafu_digit_from_char(c: char) -> i8 {
     }
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(&input).unwrap();
-    println!("{}", res);
-    let res = part_two(&input).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input), Some("2=-1=0".to_string())); // fill in
-    }
-    #[test]
-    fn test_part_two() {
-        let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input), None); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some("2=-1=0".to_string()));
     }
 }

@@ -78,7 +78,7 @@ fn get_move(their_move: i32, outcome: RpsResult) -> Option<i32> {
     }
 }
 
-pub fn part_one(input: &str) {
+pub fn part_one(input: &str) -> Option<i32> {
     let mut score = 0;
     let input = input.lines();
     for line in input {
@@ -90,10 +90,10 @@ pub fn part_one(input: &str) {
         let my_move = strategy_to_int(my_move).expect("Error: invalid move");
         score += get_round_points(my_move, their_move).expect("Error: couldn't score round");
     }
-    println!("{}", score);
+    Some(score)
 }
 
-pub fn part_two(input: &str) {
+pub fn part_two(input: &str) -> Option<i32> {
     let mut score = 0;
     let input = input.lines();
     for line in input {
@@ -106,11 +106,23 @@ pub fn part_two(input: &str) {
         let my_move = get_move(their_move, outcome).expect("Error: couldn't get my move");
         score += get_round_points(my_move, their_move).expect("Error: couldn't score round");
     }
-    println!("{}", score);
+    Some(score)
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    part_one(&input);
-    part_two(&input);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_part_one() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_one(&input);
+        assert_eq!(result, Some(15));
+    }
+
+    #[test]
+    fn test_part_two() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_two(&input);
+        assert_eq!(result, Some(12));
+    }
 }

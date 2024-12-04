@@ -216,25 +216,20 @@ fn get_move_sequence(input: &str) -> Vec<MoveType> {
     moves
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(&input).unwrap();
-    println!("{}", res);
-    let res: i64 = part_two(&input).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input), Some(3068)); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some(3068));
     }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input), Some(1514285714288)); // fill in
+        let result = part_two(&input);
+        assert_eq!(result, Some(1514285714288));
     }
 }

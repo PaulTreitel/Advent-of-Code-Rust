@@ -190,25 +190,20 @@ fn get_blueprints(input: &str) -> Vec<Blueprint> {
     prints
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(&input).unwrap();
-    println!("{}", res);
-    let res = part_two(&input).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input), Some(33)); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some(33));
     }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input), Some(3472)); // fill in
+        let result = part_two(&input);
+        assert_eq!(result, Some(3472));
     }
 }

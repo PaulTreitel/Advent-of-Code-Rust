@@ -83,25 +83,20 @@ fn get_instructions(input: &str) -> Vec<Instruction> {
     instrs
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(&input).unwrap();
-    println!("{}", res);
-    let res = part_two(&input).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input), Some(13140)); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some(13140));
     }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input), None); // fill in
+        let result = part_two(&input);
+        assert_eq!(result, None);
     }
 }

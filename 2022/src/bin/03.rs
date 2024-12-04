@@ -1,6 +1,6 @@
 advent_of_code_2022::solution!(3);
 
-pub fn part_one(input: &str) {
+pub fn part_one(input: &str) -> Option<u32> {
     let mut total_priority = 0;
     for line in input.lines() {
         let sack_halves = split_rucksack(line);
@@ -8,12 +8,12 @@ pub fn part_one(input: &str) {
         let priority = char_to_priority(shared_item).expect("Error: invalid item");
         total_priority += priority;
     }
-    println!("{}", total_priority);
+    Some(total_priority)
 }
 
-pub fn part_two(input: &str) {
+pub fn part_two(input: &str) -> Option<u32> {
     let mut total_priority: u32 = 0;
-    let mut input2 = input.clone().lines();
+    let mut input2 = input.lines();
 
     for _ in input.lines().enumerate().step_by(3) {
         let sack_one: &str = input2.next().expect("Error: sack one missing");
@@ -23,7 +23,7 @@ pub fn part_two(input: &str) {
         let priority = char_to_priority(shared_item).unwrap();
         total_priority += priority;
     }
-    println!("{}", total_priority);
+    Some(total_priority)
 }
 
 fn char_to_priority(ch: char) -> Option<u32> {
@@ -61,8 +61,20 @@ fn get_shared_char_two_bags(sack: (&str, &str)) -> Option<char> {
     None
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    part_one(&input);
-    part_two(&input);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_part_one() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_one(&input);
+        assert_eq!(result, Some(157));
+    }
+
+    #[test]
+    fn test_part_two() {
+        let input = advent_of_code_2022::template::read_file("examples", DAY);
+        let result = part_two(&input);
+        assert_eq!(result, Some(70));
+    }
 }

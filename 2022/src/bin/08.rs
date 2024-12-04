@@ -152,25 +152,20 @@ fn get_viewing_distance(forest: &Vec<Vec<u32>>, (row, col): (usize, usize)) -> V
     view_dist
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(&input).unwrap();
-    println!("{}", res);
-    let res = part_two(&input).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input), Some(21)); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some(21));
     }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input), Some(8)); // fill in
+        let result = part_two(&input);
+        assert_eq!(result, Some(8));
     }
 }

@@ -8,7 +8,8 @@ struct Monkey {
     throw_false: usize,
 }
 
-pub fn part_one(_input: &str, real: bool) -> Option<u64> {
+pub fn part_one(_input: &str) -> Option<u64> {
+    let real = _input.len() > 750;
     let mut monkeys = get_monkeys(real);
     let mut num_inspections: Vec<u64> = vec![0; monkeys.len()];
     let update_relief = |x: u64| x / 3;
@@ -44,7 +45,8 @@ fn monkey_turn(m: &mut Monkey, update_relief: fn(u64) -> u64) -> Vec<(u64, usize
     result
 }
 
-pub fn part_two(_input: &str, real: bool) -> Option<u64> {
+pub fn part_two(_input: &str) -> Option<u64> {
+    let real = _input.len() > 750;
     let mut monkeys = get_monkeys(real);
     let mut num_inspections: Vec<u64> = vec![0; monkeys.len()];
     let update_relief = |x: u64| x;
@@ -160,25 +162,20 @@ fn get_monkeys(real_input:bool) -> Vec<Monkey> {
     result
 }
 
-fn main() {
-    let input = advent_of_code_2022::template::read_file("inputs", DAY);
-    let res = part_one(&input, true).unwrap();
-    println!("{}", res);
-    let res = part_two(&input, true).unwrap();
-    println!("{}", res);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_one(&input, false), Some(10605)); // fill in
+        let result = part_one(&input);
+        assert_eq!(result, Some(10605));
     }
+
     #[test]
     fn test_part_two() {
         let input = advent_of_code_2022::template::read_file("examples", DAY);
-        assert_eq!(part_two(&input, false), Some(2713310158)); // fill in
+        let result = part_two(&input);
+        assert_eq!(result, Some(2713310158));
     }
 }
