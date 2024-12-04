@@ -2,10 +2,6 @@ use std::{env, fs, path::PathBuf, str::FromStr};
 
 pub mod aoc_cli;
 pub mod runner;
-pub mod commands;
-pub mod readme_benchmarks;
-pub mod run_multi;
-pub mod timings;
 
 pub use day::*;
 

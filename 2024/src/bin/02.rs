@@ -1,4 +1,4 @@
-advent_of_code::solution!(2);
+advent_of_code_2024::solution!(2);
 
 enum LevelDirection {
     Inc,
@@ -79,13 +79,13 @@ mod tests {
 
     #[test]
     fn test_part_one() {
-        let result = part_one(&advent_of_code::template::read_file("examples", DAY));
+        let result = part_one(&advent_of_code_2024::template::read_file("examples", DAY));
         assert_eq!(result, Some(2));
     }
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
+        let result = part_two(&advent_of_code_2024::template::read_file("examples", DAY));
         assert_eq!(result, Some(4));
     }
 }

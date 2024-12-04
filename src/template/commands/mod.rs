@@ -4,3 +4,6 @@ pub mod read;
 pub mod scaffold;
 pub mod solve;
 pub mod time;
+pub mod new_year;
+pub mod set_year;
+pub mod attempt;

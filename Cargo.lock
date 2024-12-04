@@ -28,6 +28,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "advent_of_code_2024"
+version = "0.11.0"
+dependencies = [
+ "chrono",
+ "dhat",
+ "pico-args",
+ "tinyjson",
+]
+
+[[package]]
+name = "advent_of_code_YEAR_NUMBER"
+version = "0.11.0"
+dependencies = [
+ "chrono",
+ "dhat",
+ "pico-args",
+ "tinyjson",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
