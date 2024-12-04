@@ -79,13 +79,15 @@ mod tests {
 
     #[test]
     fn test_part_one() {
-        let result = part_one(&advent_of_code_2024::template::read_file("examples", DAY));
+        let input = advent_of_code_2024::template::read_file("examples", DAY);
+        let result = part_one(&input);
         assert_eq!(result, Some(2));
     }
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code_2024::template::read_file("examples", DAY));
+        let input = advent_of_code_2024::template::read_file("examples", DAY);
+        let result = part_two(&input);
         assert_eq!(result, Some(4));
     }
 }

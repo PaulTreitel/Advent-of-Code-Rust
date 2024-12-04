@@ -17,14 +17,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_2024_5_part_one() {
-        let result = part_one(&advent_of_code_2024::template::read_file("examples", DAY));
+    fn test_part_one() {
+        let input = advent_of_code_2024::template::read_file("examples", DAY);
+        let result = part_one(&input);
         assert_eq!(result, None);
     }
 
     #[test]
-    fn test_2024_5_part_two() {
-        let result = part_two(&advent_of_code_2024::template::read_file("examples", DAY));
+    fn test_part_two() {
+        let input = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
+        let result = part_two(input);
         assert_eq!(result, None);
     }
 }

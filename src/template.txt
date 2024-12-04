@@ -17,14 +17,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_YEAR_NUMBER_DAY_NUMBER_part_one() {
+    fn test_part_one() {
         let input = advent_of_code_YEAR_NUMBER::template::read_file("examples", DAY);
         let result = part_one(&input);
         assert_eq!(result, None);
     }
 
     #[test]
-    fn test_YEAR_NUMBER_DAY_NUMBER_part_two() {
+    fn test_part_two() {
         let input = advent_of_code_YEAR_NUMBER::template::read_file("examples", DAY);
         let result = part_two(&input);
         assert_eq!(result, None);
