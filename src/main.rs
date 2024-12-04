@@ -47,6 +47,7 @@ mod args {
         SetYear {
             year: u32
         },
+        GetYear,
         #[cfg(feature = "today")]
         Today,
     }
@@ -96,6 +97,7 @@ mod args {
             Some("set-year") => AppArguments::SetYear {
                 year: args.free_from_str()?
             },
+            Some("get-year") => AppArguments::GetYear,
             #[cfg(feature = "today")]
             Some("today") => AppArguments::Today,
             Some(x) => {
@@ -168,6 +170,10 @@ fn main() {
             }
             AppArguments::NewYear { year } => new_year::handle(year),
             AppArguments::SetYear { year } => set_year::handle(year),
+            AppArguments::GetYear => {
+                let year = advent_of_code::template::get_year_exit_on_fail();
+                println!("The repository is currently set to {}", year);
+            }
         },
     };
 }
