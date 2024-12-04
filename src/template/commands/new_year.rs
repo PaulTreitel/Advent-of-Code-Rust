@@ -1,16 +1,12 @@
 use std::{
-    fs::{self, File, OpenOptions}, io::Write, process::{self, Command, Stdio}, str::FromStr
+    fs::{self}, process::{self, Command, Stdio}, str::FromStr
 };
 
 use crate::template::commands::set_year;
 
-const YEAR_NUMBER_FILES: [&str; 1] = ["Cargo.toml"];
+use super::{write_file, WriteError};
 
-#[derive(Debug)]
-enum WriteError {
-    Open,
-    Write,
-}
+const YEAR_NUMBER_FILES: [&str; 1] = ["Cargo.toml"];
 
 pub fn handle(year: u32) {
     let project_root = concat!(env!("CARGO_MANIFEST_DIR"), "/year_template/");
@@ -70,6 +66,11 @@ fn set_year(year: u32) -> () {
 fn add_to_workspace(year: u32) -> () {
     let filepath = concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml");
     let original_contents = read_toml_file();
+    if original_contents.is_err() {
+        cleanup(year);
+        process::exit(1);
+    }
+    let original_contents = original_contents.unwrap();
     let new_contents = add_year_to_toml_str(year, &original_contents);
     match write_file(filepath, new_contents.to_string().as_bytes()) {
         Ok(()) => (),
@@ -83,10 +84,14 @@ fn add_to_workspace(year: u32) -> () {
     }
 }
 
-fn read_toml_file() -> String {
+fn read_toml_file() -> Result<String, ()> {
     let filepath = concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml");
     let f = fs::read_to_string(filepath);
-    f.expect("could not open input file")
+    if f.is_err() {
+        eprintln!("failed to read Cargo.toml");
+        return Err(());
+    }
+    Ok(f.unwrap())
 }
 
 fn add_year_to_toml_str(year: u32, original: &str) -> String {
@@ -132,30 +137,4 @@ fn cleanup(year: u32) {
         .spawn()
         .unwrap();
     cmd.wait().unwrap();
-}
-
-fn open_file(filepath: &str) -> Result<File, std::io::Error> {
-    OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open(filepath)
-}
-
-fn write_file(filepath: &str, to_write: &[u8]) -> Result<(), WriteError> {
-    let file = open_file(&filepath);
-    if file.is_err() {
-        eprintln!("Failed to open file {}", filepath);
-        return Err(WriteError::Open);
-    }
-    let mut file = file.unwrap();
-
-    match file.write_all(
-        to_write
-    ) {
-        Ok(()) => Ok(()),
-        Err(e) => {
-            eprintln!("Failed to write to {filepath}: {e}");
-            Err(WriteError::Write)
-        }
-    }
 }
