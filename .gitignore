@@ -21,6 +21,10 @@ data/inputs/*
 !data/inputs/.keep
 data/puzzles/*
 !data/puzzles/.keep
+*/data/inputs/*
+!*/data/inputs/.keep
+*/data/puzzles/*
+!*/data/puzzles/.keep
 
 # Dhat
 dhat-heap.json
