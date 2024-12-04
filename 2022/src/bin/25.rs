@@ -11,7 +11,7 @@ pub fn part_one(input: &str) -> Option<String> {
     Some(vals_to_snafu(&place_vals))
 }
 
-pub fn part_two(input: &str) -> Option<i32> {
+pub fn part_two(_input: &str) -> Option<i32> {
     None
 }
 

@@ -1,6 +1,6 @@
 advent_of_code_2022::solution!(13);
 
-use std::{cmp::Ordering};
+use std::cmp::Ordering;
 
 
 enum Packet {
@@ -105,7 +105,7 @@ pub fn part_two(input: &str) -> Option<i32> {
 
 fn get_packets(input: &str) -> Vec<(Packet, Packet)> {
     let mut result = Vec::<(Packet, Packet)>::new();
-    let mut input2 = input.clone().lines();
+    let mut input2 = input.lines();
     for _ in input.lines().enumerate().step_by(3) {
         let p1 = input2.next().unwrap();
         let p2 = input2.next().unwrap();

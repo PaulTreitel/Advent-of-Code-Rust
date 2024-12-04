@@ -136,11 +136,11 @@ fn get_graph_part2(input: &str) -> ContextPart2 {
 }
 
 fn add_cube_edges(
-    edges: &mut HashMap<(i32, i32), HashSet<(i32, i32, Option<Direction>)>>,
-    points: &HashSet<(i32, i32)>,
+    _edges: &mut HashMap<(i32, i32), HashSet<(i32, i32, Option<Direction>)>>,
+    _points: &HashSet<(i32, i32)>,
     char_vecs: &Vec<Vec<char>>
 ) -> () {
-    let (sides, side_names, step) = get_sides(&char_vecs);
+    let (sides, _side_names, step) = get_sides(&char_vecs);
 
 
     for side in sides.clone() {

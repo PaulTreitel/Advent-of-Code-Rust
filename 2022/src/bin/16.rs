@@ -1,7 +1,7 @@
 advent_of_code_2022::solution!(16);
 
 use petgraph::{
-    algo::floyd_warshall, data::Build, graph::{NodeIndex, UnGraph}, Graph, Undirected
+    algo::floyd_warshall, graph::{NodeIndex, UnGraph}, Graph, Undirected
 };
 use std::{
     cmp::max,
@@ -25,15 +25,15 @@ pub fn part_one(input: &str) -> Option<i32> {
 }
 
 pub fn part_two(input: &str) -> Option<i32> {
-    let (start, graph) = get_graph(input);
-    let dists = floyd_warshall(&graph, |_| 1).ok().unwrap();
+    let (_start, graph) = get_graph(input);
+    let _dists = floyd_warshall(&graph, |_| 1).ok().unwrap();
     let nonzero_valve_ct: u32 = graph.node_weights()
         .filter(|&x| *x > 0)
         .map(|x| *x)
         .count() as u32;
     println!("{:?}", graph);
-    for i in 1..i32::pow(2, nonzero_valve_ct) + 1 {
-
+    for _i in 1..i32::pow(2, nonzero_valve_ct) + 1 {
+        todo!("2022 day 16 part 2");
     }
     None
 }
