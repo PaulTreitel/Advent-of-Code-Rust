@@ -1,22 +1,11 @@
 [package]
-name = "advent_of_code"
+name = "advent_of_code_2022"
 version = "0.11.0"
 authors = ["Felix Spöttel <1682504+fspoettel@users.noreply.github.com>"]
 edition = "2021"
-default-run = "advent_of_code"
 publish = false
 
-[workspace]
-members = ["year_template", "2024", "2022"]
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[lib]
-doctest = false
-
-[profile.dhat]
-inherits = "release"
-debug = 1
-
 [features]
 dhat-heap = ["dhat"]
 today = ["chrono"]
@@ -27,6 +16,7 @@ test_lib = []
 # Template dependencies
 chrono = { version = "0.4.38", optional = true }
 dhat = { version = "0.3.3", optional = true }
+petgraph = "0.6.5"
 pico-args = "0.5.0"
 tinyjson = "2.5.1"
 
