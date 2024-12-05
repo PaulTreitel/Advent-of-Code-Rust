@@ -28,6 +28,7 @@ pub struct Grid<T: Clone + PartialEq> {
     cols: usize,
 }
 
+#[derive(Debug, Clone)]
 pub struct GridIterator {
     grid_idxs: Vec<(usize, usize)>,
 }
@@ -47,7 +48,7 @@ impl<T: Clone + PartialEq> Grid<T> {
         if rows == 0 {
             panic!("Grid is empty!");
         }
-        let cols = grid.get(0).unwrap().len();
+        let cols = grid.first().unwrap().len();
         for r in 0..rows {
             for c in 0..cols {
                 let v = grid.get(r).unwrap().get(c).unwrap();
@@ -59,6 +60,14 @@ impl<T: Clone + PartialEq> Grid<T> {
             rows,
             cols,
         }
+    }
+
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
+
+    pub fn cols(&self) -> usize {
+        self.cols
     }
 
     pub fn valid_cell(&self, row: usize, col: usize) -> bool {
@@ -76,15 +85,7 @@ impl<T: Clone + PartialEq> Grid<T> {
         let row_max_fails = offset.0 > 0 && row >= self.rows - scan_len;
         let col_min_fails = offset.1 < 0 && col < scan_len;
         let col_max_fails = offset.1 > 0 && col >= self.cols - scan_len;
-        !(row_max_fails || row_min_fails) && !(col_max_fails || col_min_fails)
-    }
-
-    pub fn rows(&self) -> usize {
-        self.rows
-    }
-
-    pub fn cols(&self) -> usize {
-        self.cols
+        !(row_max_fails || row_min_fails || col_max_fails || col_min_fails)
     }
 
     pub fn get_directional_scan(
@@ -108,19 +109,23 @@ impl<T: Clone + PartialEq> Grid<T> {
         Some(scan_result)
     }
 
-    pub fn cell_matches(&self, row: usize, col: usize, other: &T) -> Result<bool, ()> {
+    pub fn cell_eq(&self, row: usize, col: usize, other: &T) -> bool {
         if !self.valid_cell(row, col) {
-            return Err(());
+            return false;
         }
         if let Some(cell) = self.grid.get(&(row, col)) {
-            Ok(cell.eq(other))
+            cell.eq(other)
         } else {
-            Err(())
+            false
         }
     }
 
+    pub fn get(&self, row: usize, col: usize) -> Option<&T> {
+        self.grid.get(&(row, col))
+    }
+
     pub fn iterate_by_rows(&self) -> GridIterator {
-        let mut cell_positions: Vec<(usize, usize)> = self.grid.keys().map(|k| *k).collect();
+        let mut cell_positions: Vec<(usize, usize)> = self.grid.keys().copied().collect();
         cell_positions.sort();
         cell_positions.reverse();
         let x = GridIterator {
@@ -130,7 +135,7 @@ impl<T: Clone + PartialEq> Grid<T> {
     }
 
     pub fn iterate_by_cols(&self) -> GridIterator {
-        let mut cell_positions: Vec<(usize, usize)> = self.grid.keys().map(|k| *k).collect();
+        let mut cell_positions: Vec<(usize, usize)> = self.grid.keys().copied().collect();
         cell_positions.sort_by(|x, y| {
             let col_order = x.1.cmp(&y.1);
             if let Ordering::Equal = col_order {

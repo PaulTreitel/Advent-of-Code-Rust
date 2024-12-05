@@ -1,3 +1,5 @@
+use advent_of_code_2024::utils::parse;
+
 advent_of_code_2024::solution!(2);
 
 pub fn part_one(input: &str) -> Option<u32> {
@@ -47,14 +49,10 @@ fn report_safe(report: &[i32]) -> bool {
 }
 
 fn parse_input(input: &str) -> Vec<Vec<i32>> {
-    input
-        .lines()
-        .map(|x| {
-            x.split_whitespace()
-                .map(|y| y.parse::<i32>().unwrap())
-                .collect()
-        })
-        .collect()
+    parse::into_2d_array(
+        input,
+        |x| x.split_whitespace().collect(),
+        |x| x.parse::<i32>().unwrap())
 }
 
 #[cfg(test)]
