@@ -33,24 +33,15 @@ pub fn read_file_part(folder: &str, day: Day, part: u8) -> String {
 }
 
 pub fn get_year() -> Result<u32, ()> {
-    let mut buf = String::new();
-    let filepath = env::current_dir()
-        .unwrap()
-        .join("year.txt");
-    let yearfile = fs::OpenOptions::new()
-        .read(true)
-        .open(filepath);
-    match yearfile {
-        Ok(mut file) => {
-            if let Ok(_) = std::io::Read::read_to_string(&mut file, &mut buf) {
-                buf.parse::<u32>().or(Err(()))
-            } else {
-                Err(())
+    match std::env::var("AOC_YEAR") {
+        Ok(x) => {
+            let x = x.parse::<u32>();
+            match x {
+                Ok(x) => Ok(x),
+                Err(_) => Err(()),
             }
         }
-        Err(_) => {
-            Err(())
-        }
+        Err(_) => Err(()),
     }
 }
 

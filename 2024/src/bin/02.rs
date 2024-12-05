@@ -1,13 +1,8 @@
 advent_of_code_2024::solution!(2);
 
-
 pub fn part_one(input: &str) -> Option<u32> {
     let reports = parse_input(input);
-    let sum = reports
-        .iter()
-        .filter(|x| report_safe(x))
-        .map(|_| 1)
-        .sum();
+    let sum = reports.iter().filter(|x| report_safe(x)).map(|_| 1).sum();
     Some(sum)
 }
 
@@ -27,7 +22,6 @@ fn could_be_safe(report: &[i32]) -> bool {
         new_report.remove(i);
         if report_safe(&new_report) {
             return true;
-
         }
     }
     false
@@ -55,10 +49,11 @@ fn report_safe(report: &[i32]) -> bool {
 fn parse_input(input: &str) -> Vec<Vec<i32>> {
     input
         .lines()
-        .map(|x|
+        .map(|x| {
             x.split_whitespace()
-            .map(|y| y.parse::<i32>().unwrap())
-            .collect())
+                .map(|y| y.parse::<i32>().unwrap())
+                .collect()
+        })
         .collect()
 }
 
