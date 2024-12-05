@@ -52,7 +52,8 @@ fn parse_input(input: &str) -> Vec<Vec<i32>> {
     parse::into_2d_array(
         input,
         |x| x.split_whitespace().collect(),
-        |x| x.parse::<i32>().unwrap())
+        |x| x.parse::<i32>().unwrap(),
+    )
 }
 
 #[cfg(test)]
