@@ -93,7 +93,7 @@ fn get_puzzle_path(day: Day) -> String {
 fn build_args(command: &str, args: &[String], day: Day) -> Vec<String> {
     let mut cmd_args = args.to_vec();
 
-    if let Ok(year) = super::get_year() {
+    if let Some(year) = super::get_year() {
         cmd_args.push("--year".into());
         cmd_args.push(year.to_string());
     }

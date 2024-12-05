@@ -19,10 +19,7 @@ pub const ANSI_RESET: &str = "\x1b[0m";
 #[must_use]
 pub fn read_file(folder: &str, day: Day) -> String {
     let cwd = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
-    let filepath = cwd
-        .join("data")
-        .join(folder)
-        .join(format!("{day}.txt"));
+    let filepath = cwd.join("data").join(folder).join(format!("{day}.txt"));
     let f = fs::read_to_string(filepath);
     f.expect("could not open input file")
 }
@@ -39,22 +36,15 @@ pub fn read_file_part(folder: &str, day: Day, part: u8) -> String {
     f.expect("could not open input file")
 }
 
-pub fn get_year() -> Result<u32, ()> {
-    match std::env::var("AOC_YEAR") {
-        Ok(x) => {
-            let x= x.parse::<u32>();
-            match x {
-                Ok(x) => Ok(x),
-                Err(_) => Err(()),
-            }
-        },
-        Err(_) => Err(()),
-    }
+pub fn get_year() -> Option<u32> {
+    std::env::var("AOC_YEAR")
+        .ok()
+        .and_then(|x| x.parse::<u32>().ok())
 }
 
 pub fn get_year_exit_on_fail() -> u32 {
     let year = get_year();
-    if year.is_err() {
+    if year.is_none() {
         eprintln!("{}", crate::YEAR_NOT_FOUND_ERROR_MSG);
         std::process::exit(1);
     }

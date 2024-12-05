@@ -20,7 +20,7 @@ pub fn handle(year: u32) {
     println!("Created AOC year {} workspace module", year);
 }
 
-fn copy_year_template(project_root: &str, new_root: &str) -> () {
+fn copy_year_template(project_root: &str, new_root: &str) {
     let cmd_args = vec![project_root, &new_root, "-r"];
     let mut cmd = Command::new("cp")
         .args(&cmd_args)
@@ -32,7 +32,7 @@ fn copy_year_template(project_root: &str, new_root: &str) -> () {
     cmd.wait().unwrap();
 }
 
-fn set_year_numbers(year: u32, new_root: &str) -> () {
+fn set_year_numbers(year: u32, new_root: &str) {
     for filename in YEAR_NUMBER_FILES {
         let mut filepath = new_root.to_string();
         filepath.push_str(filename);
@@ -56,14 +56,14 @@ fn set_year_numbers(year: u32, new_root: &str) -> () {
     }
 }
 
-fn set_year(year: u32) -> () {
+fn set_year(year: u32) {
     if set_year::set_year(year).is_err() {
         cleanup(year);
         process::exit(1);
     }
 }
 
-fn add_to_workspace(year: u32) -> () {
+fn add_to_workspace(year: u32) {
     let filepath = concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml");
     let original_contents = read_toml_file();
     if original_contents.is_err() {
