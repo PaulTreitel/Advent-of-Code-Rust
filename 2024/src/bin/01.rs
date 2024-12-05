@@ -6,13 +6,13 @@ pub fn part_one(input: &str) -> Option<u32> {
     let (mut list1, mut list2) = split_convert_lists(input);
     list1.sort();
     list2.sort();
-    let mut distance = 0;
-    for i in 0..list1.len() {
-        let first = list1.get(i).unwrap();
-        let second = list2.get(i).unwrap();
-        distance += (*first as i32 - *second as i32).abs();
-    }
-    Some(distance as u32)
+    let distances = list1
+        .iter()
+        .zip(list2)
+        .map(|(x, y)| (*x - y).abs() as u32)
+        .reduce(|acc, e| acc + e)
+        .unwrap();
+    Some(distances)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -22,29 +22,24 @@ pub fn part_two(input: &str) -> Option<u32> {
     for num in list1 {
         similarity += num * occurrence_table.get(&num).unwrap_or(&0);
     }
-    Some(similarity)
+    Some(similarity as u32)
 }
 
-fn create_occurence_table(lst: &[u32]) -> HashMap<u32, u32> {
+fn create_occurence_table(lst: &[i32]) -> HashMap<i32, i32> {
     let mut table = HashMap::new();
     for num in lst {
-        if table.contains_key(num) {
-            *table.get_mut(num).unwrap() += 1;
-        } else {
-            table.insert(*num, 1);
-        }
+        table.insert(*num, 1 + table.get(num).or(Some(&0)).unwrap());
     }
     table
 }
 
-fn split_convert_lists(input: &str) -> (Vec<u32>, Vec<u32>) {
+fn split_convert_lists(input: &str) -> (Vec<i32>, Vec<i32>) {
     let mut list1 = Vec::new();
     let mut list2 = Vec::new();
-    let lines = input.lines();
-    for line in lines {
+    for line in input.lines() {
         let nums: Vec<&str> = line.split_ascii_whitespace().collect();
-        let num1 = nums.first().unwrap().parse::<u32>().unwrap();
-        let num2 = nums.get(1).unwrap().parse::<u32>().unwrap();
+        let num1 = nums.first().unwrap().parse::<i32>().unwrap();
+        let num2 = nums.get(1).unwrap().parse::<i32>().unwrap();
         list1.push(num1);
         list2.push(num2);
     }
