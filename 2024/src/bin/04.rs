@@ -1,4 +1,4 @@
-use advent_of_code_2024::utils::grid::{Grid, ALL_DOWN_OFFSETS};
+use advent_of_code_2024::utils::{direction::ALL_DOWN_DIRECTION, grid::Grid};
 
 advent_of_code_2024::solution!(4);
 
@@ -45,7 +45,7 @@ fn dir_matches(
     let search_target = search_str.chars().collect::<Vec<char>>();
     let mut search_target_reversed = search_target.clone();
     search_target_reversed.reverse();
-    match grid.directional_scan(row, col, offset, search_str.len()) {
+    match grid.scan_direction(row, col, offset, search_str.len()) {
         Some(search) => search_target.eq(&search) || search_target_reversed.eq(&search),
         None => false,
     }
@@ -54,8 +54,8 @@ fn dir_matches(
 fn get_matches_part_one(grid: &Grid<char>, search_str: &str) -> u32 {
     let mut match_count = 0;
     for ((row, col), _) in grid.iterate_by_rows() {
-        for offset in ALL_DOWN_OFFSETS {
-            if dir_matches(grid, row, col, offset, search_str) {
+        for offset in ALL_DOWN_DIRECTION {
+            if dir_matches(grid, row, col, offset.to_offset(), search_str) {
                 match_count += 1;
             }
         }

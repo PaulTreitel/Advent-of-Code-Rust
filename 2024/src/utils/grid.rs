@@ -1,29 +1,6 @@
 use std::{cmp::{min, Ordering}, fmt::Debug};
 
 use super::show;
-
-pub const CARDINAL_DIRECTION_OFFSETS: [(i32, i32); 4] = [(-1, 0), (0, -1), (1, 0), (0, -1)];
-pub const DIAG_DIRECTION_OFFSETS: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, 1), (1, -1)];
-pub const ALL_DIRECTION_OFFSETS: [(i32, i32); 8] = [
-    (-1, 0),
-    (0, -1),
-    (1, 0),
-    (0, -1),
-    (-1, -1),
-    (-1, 1),
-    (1, 1),
-    (1, -1),
-];
-
-/* When scanning for sequences in a grid, one may want to scan just right/down
- * orthogonally and just down-left/down-right diagonally to avoid getting
- * duplicates from scanning the same sequence from above and below
- */
-pub const DOWN_RIGHT_CARDINAL_OFFSETS: [(i32, i32); 2] = [(1, 0), (0, 1)];
-pub const DOWN_DIAG_OFFSETS: [(i32, i32); 2] = [(1, 1), (1, -1)];
-pub const ALL_DOWN_OFFSETS: [(i32, i32); 4] = [(1, 0), (0, 1), (1, 1), (1, -1)];
-
-// type GridCell = T: Clone + PartialEq + Ord;
 pub trait GridCell: Clone + PartialEq + Ord + Debug {}
 impl<T> GridCell for T where T: Clone + PartialEq + Ord + Debug {}
 
@@ -95,7 +72,68 @@ impl<T: GridCell> Grid<T> {
         self.cols
     }
 
-    pub fn valid_cell(&self, row: usize, col: usize) -> bool {
+    pub fn get(&self, row: usize, col: usize) -> Option<&T> {
+        self.grid.get(row)?.get(col)
+    }
+
+    pub fn get_mut(&mut self, row: usize, col: usize) -> Option<&mut T> {
+        self.grid.get_mut(row)?.get_mut(col)
+    }
+
+    pub fn get_row(&self, row: usize) -> Option<Vec<&T>> {
+        if row >= self.rows {
+            return None;
+        }
+        let row = self.grid
+            .get(row)?
+            .iter()
+            .map(|x| x)
+            .collect::<Vec<&T>>();
+        Some(row)
+    }
+
+    pub fn get_col(&self, col: usize) -> Option<Vec<&T>> {
+        if col >= self.cols {
+            return None;
+        }
+        let col: Vec<Option<&T>> = self.grid
+            .iter()
+            .map(|row| row.get(col))
+            .collect();
+        let mut new_col = Vec::new();
+        for item in col {
+            match item {
+                Some(x) => new_col.push(x),
+                None => return None,
+            }
+        }
+        Some(new_col)
+    }
+
+    pub fn index_of(&self, eq: &T) -> Option<(usize, usize)> {
+        for r in 0..self.rows {
+            for c in 0..self.cols {
+                if self.grid.get(r)?.get(c)?.eq(eq) {
+                    return Some((r, c));
+                }
+            }
+        }
+        None
+    }
+
+    pub fn count(&self, cmp: impl Fn(&T) -> bool) -> u64 {
+        let mut count = 0;
+        for r in 0..self.rows {
+            for c in 0..self.cols {
+                if cmp(self.grid.get(r).unwrap().get(c).unwrap()) {
+                    count += 1;
+                }
+            }
+        }
+        count
+    }
+
+    pub fn is_valid_cell(&self, row: usize, col: usize) -> bool {
         row < self.rows && col < self.cols
     }
 
@@ -182,55 +220,6 @@ impl<T: GridCell> Grid<T> {
             scan_result.push(cell.clone());
         }
         Some(scan_result)
-    }
-
-    pub fn get(&self, row: usize, col: usize) -> Option<&T> {
-        self.grid.get(row)?.get(col)
-    }
-
-    pub fn get_mut(&mut self, row: usize, col: usize) -> Option<&mut T> {
-        self.grid.get_mut(row)?.get_mut(col)
-    }
-
-    pub fn get_row(&self, row: usize) -> Option<Vec<&T>> {
-        if row >= self.rows {
-            return None;
-        }
-        let row = self.grid
-            .get(row)?
-            .iter()
-            .map(|x| x)
-            .collect::<Vec<&T>>();
-        Some(row)
-    }
-
-    pub fn get_col(&self, col: usize) -> Option<Vec<&T>> {
-        if col >= self.cols {
-            return None;
-        }
-        let col: Vec<Option<&T>> = self.grid
-            .iter()
-            .map(|row| row.get(col))
-            .collect();
-        let mut new_col = Vec::new();
-        for item in col {
-            match item {
-                Some(x) => new_col.push(x),
-                None => return None,
-            }
-        }
-        Some(new_col)
-
-        // let mut cells: Vec<((usize, usize), &T)> = self.grid
-        //     .iter()
-        //     .map(|x| x.get(index))
-        //     .collect();
-        // cells.sort_by(|(x, _), (y, _)|
-        //     Grid::<T>::column_cell_ordering(x, y)
-        // );
-        // cells.reverse();
-        // let cells: Vec<T> = cells.iter().map(|(_, v)| (*v).clone()).collect();
-        // Some(cells)
     }
 
     fn get_iterator_grid(&self) -> Vec<((usize, usize), T)> {

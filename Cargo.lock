@@ -46,6 +46,7 @@ dependencies = [
  "chrono",
  "dhat",
  "graph_builder",
+ "num",
  "pico-args",
  "tinyjson",
 ]
@@ -57,6 +58,7 @@ dependencies = [
  "chrono",
  "dhat",
  "graph_builder",
+ "num",
  "pico-args",
  "regex",
  "tinyjson",
