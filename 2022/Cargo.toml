@@ -18,6 +18,7 @@ chrono = { version = "0.4.38", optional = true }
 dhat = { version = "0.3.3", optional = true }
 petgraph = "0.6.5"
 pico-args = "0.5.0"
+regex = "1.11.1"
 tinyjson = "2.5.1"
 
 # Solution dependencies

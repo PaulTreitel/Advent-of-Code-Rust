@@ -20,7 +20,7 @@ pub fn part_two(input: &str) -> Option<u32> {
 
 fn get_diagonal_matches_part_two(grid: &Grid<char>, search_str: &str) -> u32 {
     let mut diagonal_count = 0;
-    for (row, col) in grid.iterate_by_rows() {
+    for ((row, col), _) in grid.iterate_by_rows() {
         if row == 0 || col == 0 || row == grid.rows() - 1 || col == grid.cols() - 1 {
             continue;
         }
@@ -45,7 +45,7 @@ fn dir_matches(
     let search_target = search_str.chars().collect::<Vec<char>>();
     let mut search_target_reversed = search_target.clone();
     search_target_reversed.reverse();
-    match grid.get_directional_scan(row, col, offset, search_str.len()) {
+    match grid.directional_scan(row, col, offset, search_str.len()) {
         Some(search) => search_target.eq(&search) || search_target_reversed.eq(&search),
         None => false,
     }
@@ -53,7 +53,7 @@ fn dir_matches(
 
 fn get_matches_part_one(grid: &Grid<char>, search_str: &str) -> u32 {
     let mut match_count = 0;
-    for (row, col) in grid.iterate_by_rows() {
+    for ((row, col), _) in grid.iterate_by_rows() {
         for offset in ALL_DOWN_OFFSETS {
             if dir_matches(grid, row, col, offset, search_str) {
                 match_count += 1;

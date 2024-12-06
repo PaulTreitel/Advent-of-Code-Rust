@@ -1,49 +1,53 @@
+use advent_of_code_2022::utils::parse;
+
 advent_of_code_2022::solution!(2);
 
-const ROCK: i32 = 1;
-const PAPER: i32 = 2;
-const SCISSORS: i32 = 3;
+const ROCK_SCORE: i32 = 1;
+const PAPER_SCORE: i32 = 2;
+const SCISSORS_SCORE: i32 = 3;
 const WIN_SCORE: i32 = 6;
 const DRAW_SCORE: i32 = 3;
 
-pub enum RpsResult {
+enum RpsResult {
     Win,
     Draw,
     Lose
 }
 
-fn get_round_points(my_move: i32, their_move: i32) -> Option<i32> {
+enum Move {
+    Rock,
+    Paper,
+    Scissors
+}
+
+fn get_round_points(my_move: &Move, their_move: &Move) -> Option<i32> {
     match my_move {
-        ROCK => match their_move {
-            ROCK => Some(ROCK + DRAW_SCORE),
-            PAPER => Some(ROCK),
-            SCISSORS => Some(ROCK + WIN_SCORE),
-            _ => None
+        Move::Rock => match their_move {
+            Move::Rock => Some(ROCK_SCORE + DRAW_SCORE),
+            Move::Paper => Some(ROCK_SCORE),
+            Move::Scissors => Some(ROCK_SCORE + WIN_SCORE),
         },
-        PAPER => match their_move {
-            ROCK => Some(PAPER + WIN_SCORE),
-            PAPER => Some(PAPER + DRAW_SCORE),
-            SCISSORS => Some(PAPER),
-            _ => None
+        Move::Paper => match their_move {
+            Move::Rock => Some(PAPER_SCORE + WIN_SCORE),
+            Move::Paper => Some(PAPER_SCORE + DRAW_SCORE),
+            Move::Scissors => Some(PAPER_SCORE),
         },
-        SCISSORS => match their_move {
-            ROCK => Some(SCISSORS),
-            PAPER => Some(SCISSORS + WIN_SCORE),
-            SCISSORS => Some(SCISSORS + DRAW_SCORE),
-            _ => None
+        Move::Scissors => match their_move {
+            Move::Rock => Some(SCISSORS_SCORE),
+            Move::Paper => Some(SCISSORS_SCORE + WIN_SCORE),
+            Move::Scissors => Some(SCISSORS_SCORE + DRAW_SCORE),
         },
-        _ => None
     }
 }
 
-fn strategy_to_int(ch: char) -> Option<i32> {
+fn char_to_move(ch: char) -> Option<Move> {
     match ch.to_ascii_uppercase() {
-        'A' => Some(ROCK),
-        'B' => Some(PAPER),
-        'C' => Some(SCISSORS),
-        'X' => Some(ROCK),
-        'Y' => Some(PAPER),
-        'Z' => Some(SCISSORS),
+        'A' => Some(Move::Rock),
+        'B' => Some(Move::Paper),
+        'C' => Some(Move::Scissors),
+        'X' => Some(Move::Rock),
+        'Y' => Some(Move::Paper),
+        'Z' => Some(Move::Scissors),
         _ => None
     }
 }
@@ -57,56 +61,59 @@ fn char_to_result(ch: char) -> Option<RpsResult> {
     }
 }
 
-fn get_move(their_move: i32, outcome: RpsResult) -> Option<i32> {
+fn get_move(their_move: &Move, outcome: RpsResult) -> Move {
     match their_move {
-        ROCK => match outcome {
-            RpsResult::Win => Some(PAPER),
-            RpsResult::Draw => Some(ROCK),
-            RpsResult::Lose => Some(SCISSORS)
+        Move::Rock => match outcome {
+            RpsResult::Win => Move::Paper,
+            RpsResult::Draw => Move::Rock,
+            RpsResult::Lose => Move::Scissors
         }
-        PAPER => match outcome {
-            RpsResult::Win => Some(SCISSORS),
-            RpsResult::Draw => Some(PAPER),
-            RpsResult::Lose => Some(ROCK)
+        Move::Paper => match outcome {
+            RpsResult::Win => Move::Scissors,
+            RpsResult::Draw => Move::Paper,
+            RpsResult::Lose => Move::Rock
         }
-        SCISSORS => match outcome {
-            RpsResult::Win => Some(ROCK),
-            RpsResult::Draw => Some(SCISSORS),
-            RpsResult::Lose => Some(PAPER)
+        Move::Scissors => match outcome {
+            RpsResult::Win => Move::Rock,
+            RpsResult::Draw => Move::Scissors,
+            RpsResult::Lose => Move::Paper
         }
-        _ => None
     }
 }
 
 pub fn part_one(input: &str) -> Option<i32> {
     let mut score = 0;
-    let input = input.lines();
-    for line in input {
-        let mut line = line.chars();
-        let their_move = line.next().expect("Error: missing value");
-        let their_move = strategy_to_int(their_move).expect("Error: invalid move");
-        line.next();
-        let my_move = line.next().expect("Error: missing value");
-        let my_move = strategy_to_int(my_move).expect("Error: invalid move");
-        score += get_round_points(my_move, their_move).expect("Error: couldn't score round");
+    let (their_moves, my_moves) = parse_input(input);
+    let round_iter = my_moves
+        .iter()
+        .zip(their_moves)
+        .map(|(x, y)| (char_to_move(*x).unwrap(), char_to_move(y).unwrap()));
+    for (me, them) in round_iter {
+        score += get_round_points(&me, &them).unwrap();
     }
     Some(score)
 }
 
 pub fn part_two(input: &str) -> Option<i32> {
     let mut score = 0;
-    let input = input.lines();
-    for line in input {
-        let mut line = line.chars();
-        let their_move = line.next().expect("Error: missing value");
-        let their_move = strategy_to_int(their_move).expect("Error: invalid move");
-        line.next();
-        let outcome = line.next().expect("Error: missing value");
-        let outcome = char_to_result(outcome).expect("Error: bad round result");
-        let my_move = get_move(their_move, outcome).expect("Error: couldn't get my move");
-        score += get_round_points(my_move, their_move).expect("Error: couldn't score round");
+    let (their_moves, outcomes) = parse_input(input);
+    let round_iter = their_moves
+        .iter()
+        .zip(outcomes)
+        .map(|(x, y)| (char_to_move(*x).unwrap(), char_to_result(y).unwrap()));
+    for (them, outcome) in round_iter {
+        let me = get_move(&them, outcome);
+        score += get_round_points(&me, &them).unwrap();
     }
     Some(score)
+}
+
+fn parse_input(input: &str) -> (Vec<char>, Vec<char>) {
+    parse::split_two_vertical_lists(
+        input,
+        |s| s.split(" ").collect(),
+        |s| s.chars().next().unwrap(),
+    )
 }
 
 #[cfg(test)]

@@ -1,52 +1,29 @@
+use advent_of_code_2022::utils::{grid::Grid, parse};
+
 advent_of_code_2022::solution!(8);
 
 pub fn part_one(input: &str) -> Option<i32> {
     let (forest, mut visible) = get_tables(input);
-    let row_len = forest.get(0).unwrap().len();
-    for row_index in 0..forest.len() {
-        let vis_row = visible.get_mut(row_index).unwrap();
-        visible_on_row(vis_row, forest.get(row_index).unwrap());
+    for row_idx in 0..forest.rows() {
+        let vis_row = visible.get_mut(row_idx).unwrap();
+        let forest_row = forest.get_row(row_idx).unwrap();
+        visible_on_row(vis_row, &forest_row);
     }
-    for col_index in 0..row_len {
-        visible_on_col(&mut visible, &forest, col_index);
+    for col_index in 0..forest.cols() {
+        visible_on_col(&forest, &mut visible, col_index);
     }
     let mut total = 0;
     for row_index in 0..visible.len() {
         let row = visible.get(row_index).unwrap();
         total += row.iter().map(|x| if *x {1} else {0}).sum::<i32>();
     }
-    // for t in forest {
-    //     println!("{:?}", t);
-    // }
-    // for r in visible {
-    //     println!("{:?}", r);
-    // }
-    // println!("{}", total);
     Some(total)
 }
 
-fn get_tables(input: &str) -> (Vec<Vec<u32>>, Vec<Vec<bool>>) {
-    let mut forest: Vec<Vec<u32>> = Vec::new();
-    let mut visible: Vec<Vec<bool>> = Vec::new();
-    for line in input.lines() {
-        let trees = line.chars();
-        let mut new_forest_line = Vec::<u32>::new();
-        let mut new_vis_line = Vec::<bool>::new();
-        for t in trees {
-            new_forest_line.push(t.to_digit(10).unwrap());
-            new_vis_line.push(false);
-        }
-        forest.push(new_forest_line);
-        visible.push(new_vis_line);
-    }
-    (forest, visible)
-}
-
-fn visible_on_col(visible: &mut Vec<Vec<bool>>, forest: &Vec<Vec<u32>>, col_index: usize) {
+fn visible_on_col(forest: &Grid<u32>, visible: &mut Vec<Vec<bool>>, col_index: usize) {
     let mut max_seen = 0;
-    for row_index in 0..forest.len() {
-        let row = forest.get(row_index).unwrap();
-        let tree: &u32 = row.get(col_index).unwrap();
+    for row_index in 0..forest.rows() {
+        let tree = forest.get(row_index, col_index).unwrap();
         if *tree > max_seen || (*tree == 0 && row_index == 0) {
             max_seen = *tree;
             *visible.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = true;
@@ -54,26 +31,25 @@ fn visible_on_col(visible: &mut Vec<Vec<bool>>, forest: &Vec<Vec<u32>>, col_inde
     }
 
     let mut max_seen_bottom = 0;
-    for row_index in (0..forest.len()).rev() {
-        let row = forest.get(row_index).unwrap();
-        let tree: &u32 = row.get(col_index).unwrap();
-        if *tree > max_seen_bottom || (*tree == 0 && row_index == forest.len() - 1) {
+    for row_index in (0..forest.rows()).rev() {
+        let tree = forest.get(row_index, col_index).unwrap();
+        if *tree > max_seen_bottom || (*tree == 0 && row_index == forest.rows() - 1) {
             max_seen_bottom = *tree;
             *visible.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = true;
         }
     }
 }
 
-fn visible_on_row(visibility_row: &mut Vec<bool>, row: &Vec<u32>) {
+fn visible_on_row(visibility_row: &mut Vec<bool>, row: &Vec<&u32>) {
     let mut max_seen = 0;
-    for (index, tree) in row.iter().enumerate() {
+    for (index, &tree) in row.iter().enumerate() {
         if *tree > max_seen || (*tree == 0 && index == 0) {
             max_seen = *tree;
             *visibility_row.get_mut(index).unwrap() = true;
         }
     }
     let mut max_seen_right = 0;
-    for (index, tree) in row.iter().enumerate().rev() {
+    for (index, &tree) in row.iter().enumerate().rev() {
         if *tree > max_seen_right || (*tree == 0  && index == row.len() - 1) {
             max_seen_right = *tree;
             *visibility_row.get_mut(index).unwrap() = true;
@@ -92,8 +68,8 @@ pub fn part_two(input: &str) -> Option<i32> {
         scenic_scores.push(s);
     }
 
-    for row_index in 0..forest.len() {
-        for col_index in 0..forest.get(0).unwrap().len() {
+    for row_index in 0..forest.rows() {
+        for col_index in 0..forest.cols() {
             let view_distances = get_viewing_distance(&forest, (row_index, col_index));
             let scenic_score = view_distances.iter().fold(1, |acc, e| acc * e);
             *scenic_scores.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = scenic_score;
@@ -107,18 +83,18 @@ pub fn part_two(input: &str) -> Option<i32> {
     Some(max_scenic)
 }
 
-fn get_viewing_distance(forest: &Vec<Vec<u32>>, (row, col): (usize, usize)) -> Vec<i32> {
-    let start_tree = forest.get(row).unwrap().get(col).unwrap();
+fn get_viewing_distance(forest: &Grid<u32>, (row, col): (usize, usize)) -> Vec<i32> {
+    let start_tree = forest.get(row, col).unwrap();
     let mut view_dist: Vec<i32> = Vec::new();
     let directions: [i32; 2] = [1, -1];
     for dir in directions {
         let mut tmp_row = row as i32;
         let mut x: usize = 0;
-        for _ in 1..forest.get(row).unwrap().len() {
+        for _ in 1..forest.cols() {
             tmp_row += dir;
-            match forest.get(tmp_row as usize) {
+            match forest.get_row(tmp_row as usize) {
                 Some(a) => {
-                    if a.get(col).unwrap() >= start_tree && tmp_row != row as i32 {
+                    if *a.get(col).unwrap() >= start_tree && tmp_row != row as i32 {
                         x += 1;
                         break;
                     }
@@ -132,9 +108,9 @@ fn get_viewing_distance(forest: &Vec<Vec<u32>>, (row, col): (usize, usize)) -> V
         view_dist.push(x as i32);
         let mut tmp_col = col as i32;
         let mut y: usize = 0;
-        for _ in 1..forest.len() {
+        for _ in 1..forest.rows() {
             tmp_col += dir;
-            match forest.get(row).unwrap().get(tmp_col as usize) {
+            match forest.get(row, tmp_col as usize) {
                 Some(a) => {
                     if a >= start_tree && tmp_col != col as i32 {
                         y += 1;
@@ -150,6 +126,32 @@ fn get_viewing_distance(forest: &Vec<Vec<u32>>, (row, col): (usize, usize)) -> V
         view_dist.push(y as i32);
     }
     view_dist
+}
+
+fn get_tables(input: &str) -> (Grid<u32>, Vec<Vec<bool>>) {
+    let forest = parse::into_2d_array(
+        input,
+        |s| s.split("").filter(|&s| !s.eq("")).collect(),
+        |s| s.parse::<u32>().unwrap()
+    );
+    let visible: Vec<Vec<bool>> = forest
+        .clone()
+        .iter()
+        .map(|x| x.iter().map(|_| false).collect())
+        .collect();
+    let forest = Grid::from(forest);
+    // let visible = Grid::new(forest.rows(), forest.cols(), false);
+
+    // let mut visible: Vec<Vec<bool>> = Vec::new();
+    // for line in input.lines() {
+    //     let trees = line.chars();
+    //     let mut new_vis_line = Vec::<bool>::new();
+    //     for t in trees {
+    //         new_vis_line.push(false);
+    //     }
+    //     visible.push(new_vis_line);
+    // }
+    (forest, visible)
 }
 
 #[cfg(test)]

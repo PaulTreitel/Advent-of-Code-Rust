@@ -1,12 +1,13 @@
+use advent_of_code_2022::utils::parse;
+use regex::Regex;
+
 advent_of_code_2022::solution!(4);
 
 pub fn part_one(input: &str) -> Option<i32> {
     let mut num_fully_overlapping = 0;
-    for line in input.lines() {
-        let mut elf_ranges = line.split(",");
-        let elf_0_range: (i32, i32) = get_elf_range(elf_ranges.next().unwrap());
-        let elf_1_range: (i32, i32) = get_elf_range(elf_ranges.next().unwrap());
-        if elf_range_fully_contains(elf_0_range, elf_1_range) {
+    let elf_plans = parse_input(input);
+    for (elf0, elf1) in elf_plans {
+        if elf_range_fully_contains(elf0, elf1) {
             num_fully_overlapping += 1;
         }
     }
@@ -15,22 +16,13 @@ pub fn part_one(input: &str) -> Option<i32> {
 
 pub fn part_two(input: &str) -> Option<i32> {
     let mut num_overlapping = 0;
-    for line in input.lines() {
-        let mut elf_ranges = line.split(",");
-        let elf_0_range: (i32, i32) = get_elf_range(elf_ranges.next().unwrap());
-        let elf_1_range: (i32, i32) = get_elf_range(elf_ranges.next().unwrap());
-        if elf_range_overlaps(elf_0_range, elf_1_range) {
+    let elf_plans = parse_input(input);
+    for (elf0, elf1) in elf_plans {
+        if elf_range_overlaps(elf0, elf1) {
             num_overlapping += 1;
         }
     }
     Some(num_overlapping)
-}
-
-fn get_elf_range(range: &str) -> (i32, i32) {
-    let mut range = range.split("-");
-    let start: i32 = range.next().unwrap().parse().unwrap();
-    let end: i32 = range.next().unwrap().parse().unwrap();
-    (start, end)
 }
 
 fn elf_range_fully_contains(elf1: (i32, i32), elf2: (i32, i32)) -> bool {
@@ -39,6 +31,21 @@ fn elf_range_fully_contains(elf1: (i32, i32), elf2: (i32, i32)) -> bool {
 
 fn elf_range_overlaps(elf1: (i32, i32), elf2: (i32, i32)) -> bool {
     (elf1.1 >= elf2.0 && elf1.0 <= elf2.1) || (elf2.1 >= elf1.0 && elf2.0 <= elf1.1)
+}
+
+fn parse_input(input: &str) -> Vec<((i32, i32), (i32, i32))> {
+    let re = Regex::new(r"-|,").unwrap();
+    parse::into_2d_array(
+        input,
+        |s| re.split(s).collect(),
+        |s| s.parse::<i32>().unwrap()
+    )
+    .iter()
+    .map(|x| (
+        (*x.first().unwrap(), *x.get(1).unwrap()),
+        (*x.get(2).unwrap(), *x.get(3).unwrap())
+    ))
+    .collect()
 }
 
 #[cfg(test)]
