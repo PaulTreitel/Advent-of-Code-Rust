@@ -64,8 +64,9 @@ fn is_loop(reached: &mut HashMap<(usize, usize), Vec<i32>>, pos: (usize, usize))
             if first_idx != second_idx {
                 let first = v.get(first_idx).unwrap();
                 let second = v.get(second_idx).unwrap();
-                let (nfirst, nsecond) = (max(first_idx, second_idx), min(first, second));
-                let new = (nfirst, nsecond, (first - second).abs());
+                let first_idx = max(first_idx, second_idx);
+                let second_idx = min(first, second);
+                let new = (first_idx, second_idx, (first - second).abs());
                 if !gaps.contains(&new) {
                     gaps.push(new);
                 }

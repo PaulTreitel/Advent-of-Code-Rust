@@ -48,6 +48,7 @@ dependencies = [
  "graph_builder",
  "num",
  "pico-args",
+ "regex",
  "tinyjson",
 ]
 

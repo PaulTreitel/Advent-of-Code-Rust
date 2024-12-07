@@ -32,7 +32,7 @@ pub const ALL_DOWN_DIRECTION: [Direction; 4] = [
     Direction::Down,
     Direction::Right,
     Direction::DownLeft,
-    Direction::DownLeft
+    Direction::DownRight
 ];
 
 pub enum Direction {
