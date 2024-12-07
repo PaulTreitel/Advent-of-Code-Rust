@@ -1,4 +1,7 @@
-use std::{cmp::{min, Ordering}, fmt::Debug};
+use std::{
+    cmp::{min, Ordering},
+    fmt::Debug,
+};
 
 use super::show;
 pub trait GridCell: Clone + PartialEq + Ord + Debug {}
@@ -35,11 +38,7 @@ impl<T: GridCell> Grid<T> {
         } else if cols == 0 {
             panic!("Grid is empty!")
         }
-        Grid {
-            grid,
-            rows,
-            cols,
-        }
+        Grid { grid, rows, cols }
     }
 
     pub fn new(rows: usize, cols: usize, default: T) -> Self {
@@ -58,7 +57,7 @@ impl<T: GridCell> Grid<T> {
         let row_len = grid.first().unwrap().len();
         for row in grid {
             if row.len() != row_len {
-                return false
+                return false;
             }
         }
         true
@@ -84,11 +83,7 @@ impl<T: GridCell> Grid<T> {
         if row >= self.rows {
             return None;
         }
-        let row = self.grid
-            .get(row)?
-            .iter()
-            .map(|x| x)
-            .collect::<Vec<&T>>();
+        let row = self.grid.get(row)?.iter().collect::<Vec<&T>>();
         Some(row)
     }
 
@@ -96,10 +91,7 @@ impl<T: GridCell> Grid<T> {
         if col >= self.cols {
             return None;
         }
-        let col: Vec<Option<&T>> = self.grid
-            .iter()
-            .map(|row| row.get(col))
-            .collect();
+        let col: Vec<Option<&T>> = self.grid.iter().map(|row| row.get(col)).collect();
         let mut new_col = Vec::new();
         for item in col {
             match item {
@@ -174,23 +166,15 @@ impl<T: GridCell> Grid<T> {
     }
 
     fn max_scan_iterations(&self, row: usize, col: usize, offset: (i32, i32)) -> i32 {
-        let until_rows_end = {
-            if offset.0 > 0 {
-                (self.rows as i32 - row as i32) / offset.0
-            } else if offset.0 < 0 {
-                self.rows as i32 / offset.0
-            } else {
-                self.cols as i32
-            }
+        let until_rows_end = match offset.0.cmp(&0) {
+            Ordering::Less => self.rows as i32 / offset.0,
+            Ordering::Equal => self.cols as i32,
+            Ordering::Greater => (self.rows as i32 - row as i32) / offset.0,
         };
-        let until_cols_end = {
-            if offset.1 > 0 {
-                (self.cols as i32 - col as i32) / offset.1
-            } else if offset.1 < 0 {
-                self.cols as i32 / offset.1
-            } else {
-                self.rows as i32
-            }
+        let until_cols_end = match offset.1.cmp(&0) {
+            Ordering::Less => self.cols as i32 / offset.1,
+            Ordering::Equal => self.rows as i32,
+            Ordering::Greater => (self.cols as i32 - col as i32) / offset.1,
         };
         min(until_cols_end, until_rows_end)
     }
@@ -241,14 +225,10 @@ impl<T: GridCell> Grid<T> {
         if rows {
             cells.sort();
         } else {
-            cells.sort_by(|(x, _), (y, _)|
-                Grid::<T>::column_cell_ordering(x, y)
-            );
+            cells.sort_by(|(x, _), (y, _)| Grid::<T>::column_cell_ordering(x, y));
         }
         cells.reverse();
-        let x = GridIterator {
-            grid_idxs: cells,
-        };
+        let x = GridIterator { grid_idxs: cells };
         x.into_iter()
     }
 
@@ -274,7 +254,7 @@ impl<T: GridCell> Grid<T> {
         Grid {
             grid: new_grid,
             rows: self.rows,
-            cols: self.cols
+            cols: self.cols,
         }
     }
 
@@ -290,7 +270,7 @@ impl<T: GridCell> Grid<T> {
         let mut cells: Vec<Vec<&T>> = Vec::new();
         for row_idx in 0..self.rows {
             let row: Vec<&T> = (0..self.cols)
-                .map(|col_idx|self.get(row_idx, col_idx).unwrap())
+                .map(|col_idx| self.get(row_idx, col_idx).unwrap())
                 .collect();
             cells.push(row);
         }

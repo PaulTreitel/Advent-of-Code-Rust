@@ -19,7 +19,7 @@ pub const ALL_DIRECTIONS: [Direction; 8] = [
     Direction::UpLeft,
     Direction::UpRight,
     Direction::DownLeft,
-    Direction::DownRight
+    Direction::DownRight,
 ];
 
 /* When scanning for sequences in a grid, one may want to scan just right/down
@@ -32,9 +32,10 @@ pub const ALL_DOWN_DIRECTION: [Direction; 4] = [
     Direction::Down,
     Direction::Right,
     Direction::DownLeft,
-    Direction::DownRight
+    Direction::DownRight,
 ];
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Direction {
     Up,
     Down,
@@ -82,8 +83,8 @@ impl Direction {
         }
     }
 
-    pub fn turn_right(&self) -> Direction {
-        match self {
+    pub fn turn_right(&mut self) {
+        *self = match self {
             Direction::Up => Direction::Right,
             Direction::Right => Direction::Down,
             Direction::Down => Direction::Left,
@@ -92,11 +93,11 @@ impl Direction {
             Direction::UpRight => Direction::DownRight,
             Direction::DownRight => Direction::DownLeft,
             Direction::DownLeft => Direction::UpLeft,
-        }
+        };
     }
 
-    pub fn turn_left(&self) -> Direction {
-        match self {
+    pub fn turn_left(&mut self) {
+        *self = match self {
             Direction::Up => Direction::Left,
             Direction::Left => Direction::Down,
             Direction::Down => Direction::Right,
@@ -105,6 +106,6 @@ impl Direction {
             Direction::DownLeft => Direction::DownRight,
             Direction::DownRight => Direction::UpRight,
             Direction::UpRight => Direction::UpLeft,
-        }
+        };
     }
 }

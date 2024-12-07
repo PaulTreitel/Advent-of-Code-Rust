@@ -5,53 +5,32 @@ advent_of_code_2024::solution!(7);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Calibration {
-    Number(u64),
     Add,
     Mul,
     Concat,
 }
 
-fn eval(eqn: &Vec<Calibration>) -> Option<u64> {
-    if let Calibration::Number(x) = eqn.first().unwrap() {
-        if let Calibration::Number(y) = eqn.last().unwrap() {
-            match eqn.get(1).unwrap() {
-                Calibration::Number(_) => unreachable!(),
-                Calibration::Add => return Some(x + y),
-                Calibration::Mul => return Some(x * y),
-                Calibration::Concat => {
-                    let mut newstr = x.to_string();
-                    newstr.push_str(&y.to_string());
-                    return Some(newstr.parse().unwrap());
-                },
-            }
-        }
-        return None
-    }
-    None
-}
-
 fn can_be_equal(total: u64, nums: &[u64], operations: &Vec<Calibration>) -> bool {
     let mut eqn_values: Vec<u64> = nums.to_vec();
-    for num in &nums[1..] {
+    for &num in &nums[1..] {
         let mut new_eqn_values = Vec::new();
         for subtotal in eqn_values {
             for op in operations {
-                let new_op_eqn = vec![
-                    Calibration::Number(subtotal),
-                    op.clone(),
-                    Calibration::Number(*num)];
-                let new_val = eval(&new_op_eqn).unwrap();
-                if new_val <= total {
-                    new_eqn_values.push(new_val);
+                let new_val = match op {
+                    Calibration::Add => subtotal + num,
+                    Calibration::Mul => subtotal * num,
+                    Calibration::Concat => {
+                        (subtotal.to_string() + &num.to_string()).parse().unwrap()
+                    }
+                };
+                match new_val.cmp(&total) {
+                    std::cmp::Ordering::Less => new_eqn_values.push(new_val),
+                    std::cmp::Ordering::Equal => return true,
+                    std::cmp::Ordering::Greater => (),
                 }
             }
         }
         eqn_values = new_eqn_values;
-    }
-    for val in eqn_values {
-        if val == total {
-            return true;
-        }
     }
     false
 }
@@ -89,7 +68,8 @@ fn parse_input(input: &str) -> (Vec<u64>, Vec<Vec<u64>>) {
     let mut nums = parse::into_2d_array(
         input,
         |s| re.split(s).collect(),
-        |s| s.parse::<u64>().unwrap());
+        |s| s.parse::<u64>().unwrap(),
+    );
     let mut totals = Vec::new();
     for row_idx in 0..nums.len() {
         totals.push(nums.get_mut(row_idx).unwrap().remove(0));
