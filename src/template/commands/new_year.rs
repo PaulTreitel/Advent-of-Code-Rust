@@ -1,17 +1,26 @@
 use std::{
-    fs::{self}, process::{self, Command, Stdio}, str::FromStr
+    fs::{self}, path::PathBuf, process::{self, Command, Stdio}, str::FromStr
 };
 
 use crate::template::commands::set_year;
 
 use super::{write_file, WriteError};
 
-const YEAR_NUMBER_FILES: [&str; 1] = ["Cargo.toml"];
+const YEAR_NUMBER_FILES: [&str; 7] = [
+    "Cargo.toml",
+    "src/main.rs",
+    "src/template/aoc_cli.rs",
+    "src/template/run_multi.rs",
+    "src/template/template.txt",
+    "src/template/commands/scaffold.rs",
+    ".cargo/config.toml"
+];
 
 pub fn handle(year: u32) {
-    let project_root = concat!(env!("CARGO_MANIFEST_DIR"), "/year_template/");
-    let mut new_root = String::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
-    new_root.push_str(&format!("/{}/", year));
+    let project_root = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap()
+        .join("year_template");
+    let new_root = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap()
+        .join(format!("{}", year));
 
     copy_year_template(&project_root, &new_root);
     set_year_numbers(year, &new_root);
@@ -20,8 +29,8 @@ pub fn handle(year: u32) {
     println!("Created AOC year {} workspace module", year);
 }
 
-fn copy_year_template(project_root: &str, new_root: &str) {
-    let cmd_args = vec![project_root, &new_root, "-r"];
+fn copy_year_template(project_root: &PathBuf, new_root: &PathBuf) {
+    let cmd_args = vec![project_root.to_str().unwrap(), &new_root.to_str().unwrap(), "-r"];
     let mut cmd = Command::new("cp")
         .args(&cmd_args)
         .stdout(Stdio::inherit())
@@ -32,10 +41,9 @@ fn copy_year_template(project_root: &str, new_root: &str) {
     cmd.wait().unwrap();
 }
 
-fn set_year_numbers(year: u32, new_root: &str) {
+fn set_year_numbers(year: u32, new_root: &PathBuf) {
     for filename in YEAR_NUMBER_FILES {
-        let mut filepath = new_root.to_string();
-        filepath.push_str(filename);
+        let filepath = new_root.clone().join(filename);
 
         let original_contents = match fs::read_to_string(filepath.clone()) {
             Ok(original) => original,
@@ -45,8 +53,11 @@ fn set_year_numbers(year: u32, new_root: &str) {
                 process::exit(1);
             }
         };
-
-        let new_contents = original_contents.replace("YEAR_NUMBER", &year.to_string());
+        let mut new_contents = original_contents.clone();
+        new_contents = new_contents.replace("%YEAR_NUMBER%", &year.to_string());
+        if !filename.contains("scaffold") {
+            new_contents = new_contents.replace("YEAR_NUMBER", &year.to_string());
+        }
         let new_contents = new_contents.as_bytes();
 
         if write_file(&filepath, new_contents).is_err() {
@@ -64,7 +75,8 @@ fn set_year(year: u32) {
 }
 
 fn add_to_workspace(year: u32) {
-    let filepath = concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml");
+    let filepath = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap()
+        .join("Cargo.toml");
     let original_contents = read_toml_file();
     if original_contents.is_err() {
         cleanup(year);
@@ -72,12 +84,12 @@ fn add_to_workspace(year: u32) {
     }
     let original_contents = original_contents.unwrap();
     let new_contents = add_year_to_toml_str(year, &original_contents);
-    match write_file(filepath, new_contents.to_string().as_bytes()) {
+    match write_file(&filepath, new_contents.to_string().as_bytes()) {
         Ok(()) => (),
         Err(WriteError::Open) => (),
         Err(WriteError::Write) => {
             cleanup(year);
-            write_file(filepath, original_contents.to_string().as_bytes())
+            write_file(&filepath, original_contents.to_string().as_bytes())
                 .unwrap();
             process::exit(1);
         },

@@ -1,6 +1,6 @@
-use std::{
-    fs::{self}, path::PathBuf, process, str::FromStr
-};
+use std::process;
+
+use crate::template::{get_config_path, read_config};
 
 use super::write_file;
 
@@ -8,7 +8,6 @@ pub fn handle(year: u32) {
     if set_year(year).is_err() {
         process::exit(1);
     }
-    println!("Set repository to AOC year {}", year);
 }
 
 pub fn set_year(year: u32) -> Result<(), ()> {
@@ -34,19 +33,4 @@ pub fn set_year(year: u32) -> Result<(), ()> {
             Err(())
         },
     }
-}
-
-fn get_config_path() -> PathBuf {
-    PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap()
-        .join(".cargo")
-        .join("config.toml")
-}
-
-fn read_config(filepath: &PathBuf) -> Result<String, ()> {
-    let f = fs::read_to_string(filepath);
-    if f.is_err() {
-        eprintln!("failed to read Cargo.toml");
-        return Err(());
-    }
-    Ok(f.unwrap())
 }

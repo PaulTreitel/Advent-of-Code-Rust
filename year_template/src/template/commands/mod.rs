@@ -6,7 +6,6 @@ pub mod read;
 pub mod scaffold;
 pub mod solve;
 pub mod time;
-pub mod new_year;
 pub mod set_year;
 pub mod attempt;
 
@@ -24,7 +23,7 @@ fn open_file(filepath: &PathBuf) -> Result<File, std::io::Error> {
 }
 
 fn write_file(filepath: &PathBuf, to_write: &[u8]) -> Result<(), WriteError> {
-    let file = open_file(&filepath);
+    let file = open_file(filepath);
     if file.is_err() {
         eprintln!("Failed to open file {}", filepath.to_str().unwrap());
         return Err(WriteError::Open);
