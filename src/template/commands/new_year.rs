@@ -68,7 +68,7 @@ fn set_year_numbers(year: u32, new_root: &PathBuf) {
 }
 
 fn set_year(year: u32) {
-    if set_year::set_year(year).is_err() {
+    if !set_year::set_year(year) {
         cleanup(year);
         process::exit(1);
     }

@@ -9,11 +9,11 @@ impl<T> GridCell for T where T: Clone + PartialEq + Ord + Debug {}
 
 #[derive(Debug, Clone)]
 pub struct GridIterator<GridCell> {
-    grid_idxs: Vec<((usize, usize), GridCell)>,
+    grid_idxs: Vec<(GridPos, GridCell)>,
 }
 
 impl<GridCell> Iterator for GridIterator<GridCell> {
-    type Item = ((usize, usize), GridCell);
+    type Item = (GridPos, GridCell);
 
     fn next(&mut self) -> Option<Self::Item> {
         self.grid_idxs.pop()
@@ -89,12 +89,12 @@ impl<T: GridCell> Grid<T> {
         self.cols
     }
 
-    pub fn get(&self, row: usize, col: usize) -> Option<&T> {
-        self.grid.get(row)?.get(col)
+    pub fn get(&self, pos: &GridPos) -> Option<&T> {
+        self.grid.get(pos.row)?.get(pos.col)
     }
 
-    pub fn get_mut(&mut self, row: usize, col: usize) -> Option<&mut T> {
-        self.grid.get_mut(row)?.get_mut(col)
+    pub fn get_mut(&mut self, pos: &GridPos) -> Option<&mut T> {
+        self.grid.get_mut(pos.row)?.get_mut(pos.col)
     }
 
     pub fn get_row(&self, row: usize) -> Option<Vec<&T>> {
@@ -120,11 +120,11 @@ impl<T: GridCell> Grid<T> {
         Some(new_col)
     }
 
-    pub fn index_of(&self, eq: &T) -> Option<(usize, usize)> {
+    pub fn index_of(&self, eq: &T) -> Option<GridPos> {
         for r in 0..self.rows {
             for c in 0..self.cols {
                 if self.grid.get(r)?.get(c)?.eq(eq) {
-                    return Some((r, c));
+                    return Some(GridPos::new(r, c));
                 }
             }
         }
@@ -143,101 +143,101 @@ impl<T: GridCell> Grid<T> {
         count
     }
 
-    pub fn is_valid_cell(&self, row: usize, col: usize) -> bool {
-        row < self.rows && col < self.cols
+    pub fn is_valid_cell(&self, pos: &GridPos) -> bool {
+        pos.row < self.rows && pos.col < self.cols
     }
 
     pub fn valid_directional_scan(
         &self,
-        row: usize,
-        col: usize,
+        pos: &GridPos,
         offset: (i32, i32),
         scan_len: usize,
     ) -> bool {
-        let row_min_fails = offset.0 < 0 && row < scan_len;
-        let row_max_fails = offset.0 > 0 && row >= self.rows - scan_len;
-        let col_min_fails = offset.1 < 0 && col < scan_len;
-        let col_max_fails = offset.1 > 0 && col >= self.cols - scan_len;
+        let row_min_fails = offset.0 < 0 && pos.row < scan_len;
+        let row_max_fails = offset.0 > 0 && pos.row >= self.rows - scan_len;
+        let col_min_fails = offset.1 < 0 && pos.col < scan_len;
+        let col_max_fails = offset.1 > 0 && pos.col >= self.cols - scan_len;
         !(row_max_fails || row_min_fails || col_max_fails || col_min_fails)
     }
 
     pub fn scan_direction(
         &self,
-        row: usize,
-        col: usize,
+        pos: &GridPos,
         offset: (i32, i32),
         scan_len: usize,
-    ) -> Option<Vec<((usize, usize), T)>> {
+    ) -> Option<Vec<(GridPos, T)>> {
         if offset.0 == 0 && offset.1 == 0 {
             return None;
         }
-        if !self.valid_directional_scan(row, col, offset, scan_len - 1) {
+        if !self.valid_directional_scan(pos, offset, scan_len - 1) {
             return None;
         }
         let mut scan_result = Vec::new();
         for i in 0..scan_len as i32 {
-            let target_row = (row as i32 + offset.0 * i) as usize;
-            let target_col = (col as i32 + offset.1 * i) as usize;
-            let val = self.get(target_row, target_col)?.clone();
-            scan_result.push(((target_row, target_col), val));
+            let target_pos = GridPos::new(
+                (pos.row as i32 + offset.0 * i) as usize,
+                (pos.col as i32 + offset.1 * i) as usize,
+            );
+            let val = self.get(&target_pos)?.clone();
+            scan_result.push((target_pos, val));
         }
         Some(scan_result)
     }
 
-    fn max_scan_iterations(&self, row: usize, col: usize, offset: (i32, i32)) -> i32 {
+    fn max_scan_iterations(&self, pos: &GridPos, offset: (i32, i32)) -> i32 {
         let until_rows_end = match offset.0.cmp(&0) {
-            Ordering::Less => row as i32 / offset.0.abs(),
+            Ordering::Less => pos.row as i32 / offset.0.abs(),
             Ordering::Equal => self.cols as i32,
-            Ordering::Greater => (self.rows as i32 - row as i32) / offset.0,
+            Ordering::Greater => (self.rows as i32 - pos.row as i32) / offset.0,
         };
         let until_cols_end = match offset.1.cmp(&0) {
-            Ordering::Less => col as i32 / offset.1.abs(),
+            Ordering::Less => pos.col as i32 / offset.1.abs(),
             Ordering::Equal => self.rows as i32,
-            Ordering::Greater => (self.cols as i32 - col as i32) / offset.1,
+            Ordering::Greater => (self.cols as i32 - pos.col as i32) / offset.1,
         };
         min(until_rows_end, until_cols_end) + 1
     }
 
     pub fn scan_direction_until(
         &self,
-        row: usize,
-        col: usize,
+        pos: &GridPos,
         offset: (i32, i32),
-        stop_condition: impl Fn((usize, usize), &T) -> bool,
-    ) -> Option<Vec<((usize, usize), T)>> {
+        stop_condition: impl Fn(GridPos, &T) -> bool,
+    ) -> Option<Vec<(GridPos, T)>> {
         if offset.0 == 0 && offset.1 == 0 {
             return None;
         }
-        let max_scan_len = self.max_scan_iterations(row, col, offset);
+        let max_scan_len = self.max_scan_iterations(pos, offset);
         if max_scan_len <= 0 {
             return None;
         }
         let mut scan_result = Vec::new();
         for i in 0..max_scan_len {
-            let target_row = (row as i32 + offset.0 * i) as usize;
-            let target_col = (col as i32 + offset.1 * i) as usize;
-            match self.get(target_row, target_col) {
+            let target_pos = GridPos::new(
+                (pos.row as i32 + offset.0 * i) as usize,
+                (pos.col as i32 + offset.1 * i) as usize,
+            );
+            match self.get(&target_pos) {
                 Some(c) => {
-                    if stop_condition((target_row, target_col), c) {
+                    if stop_condition(target_pos, c) {
                         break;
                     }
-                    scan_result.push(((target_row, target_col), c.clone()))
-                },
-                None => return Some(scan_result)
+                    scan_result.push((target_pos, c.clone()))
+                }
+                None => return Some(scan_result),
             }
-
         }
         Some(scan_result)
     }
 
-    fn get_iterator_grid(&self) -> Vec<((usize, usize), T)> {
+    fn get_iterator_grid(&self) -> Vec<(GridPos, T)> {
         let mut new_grid = Vec::new();
         for row_idx in 0..self.rows {
             let row = self.grid.get(row_idx).unwrap();
-            let new_row: Vec<((usize, usize), T)> = row
+            let new_row: Vec<(GridPos, T)> = row
                 .iter()
                 .enumerate()
-                .map(|(col_idx, v)| ((row_idx, col_idx), v.clone()))
+                .map(|(col_idx, v)| (GridPos::new(row_idx, col_idx), v.clone()))
                 .collect();
             new_grid.extend_from_slice(&new_row);
         }
@@ -264,14 +264,14 @@ impl<T: GridCell> Grid<T> {
         self.iterate_by(false)
     }
 
-    pub fn grid_map<V: GridCell>(&self, f: impl Fn((usize, usize), T) -> V) -> Grid<V> {
+    pub fn grid_map<V: GridCell>(&self, f: impl Fn(GridPos, T) -> V) -> Grid<V> {
         let mut new_grid = Vec::new();
         for row_idx in 0..self.rows {
             let row = self.grid.get(row_idx).unwrap();
             let new_row: Vec<V> = row
                 .iter()
                 .enumerate()
-                .map(|(col_idx, v)| f((row_idx, col_idx), v.clone()))
+                .map(|(col_idx, v)| f(GridPos::new(row_idx, col_idx), v.clone()))
                 .collect();
             new_grid.push(new_row);
         }
@@ -282,9 +282,9 @@ impl<T: GridCell> Grid<T> {
         }
     }
 
-    fn column_cell_ordering(left: &(usize, usize), right: &(usize, usize)) -> Ordering {
-        match left.1.cmp(&right.1) {
-            Ordering::Equal => left.0.cmp(&right.0),
+    fn column_cell_ordering(left: &GridPos, right: &GridPos) -> Ordering {
+        match left.col.cmp(&right.col) {
+            Ordering::Equal => left.row.cmp(&right.row),
             Ordering::Less => Ordering::Less,
             Ordering::Greater => Ordering::Greater,
         }
@@ -294,7 +294,7 @@ impl<T: GridCell> Grid<T> {
         let mut cells: Vec<Vec<&T>> = Vec::new();
         for row_idx in 0..self.rows {
             let row: Vec<&T> = (0..self.cols)
-                .map(|col_idx| self.get(row_idx, col_idx).unwrap())
+                .map(|col_idx| self.get(&GridPos::new(row_idx, col_idx)).unwrap())
                 .collect();
             cells.push(row);
         }
