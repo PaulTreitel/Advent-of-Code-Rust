@@ -1,7 +1,11 @@
-use std::{env, fs, path::PathBuf, str::FromStr};
+use std::{env, fs, path::PathBuf, process, str::FromStr};
 
 pub mod aoc_cli;
 pub mod runner;
+pub mod commands;
+pub mod readme_benchmarks;
+pub mod run_multi;
+pub mod timings;
 
 pub use day::*;
 
@@ -15,10 +19,7 @@ pub const ANSI_RESET: &str = "\x1b[0m";
 #[must_use]
 pub fn read_file(folder: &str, day: Day) -> String {
     let cwd = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
-    let filepath = cwd
-        .join("data")
-        .join(folder)
-        .join(format!("{day}.txt"));
+    let filepath = cwd.join("data").join(folder).join(format!("{day}.txt"));
     let f = fs::read_to_string(filepath);
     f.expect("could not open input file")
 }
@@ -35,27 +36,49 @@ pub fn read_file_part(folder: &str, day: Day, part: u8) -> String {
     f.expect("could not open input file")
 }
 
-pub fn get_year() -> Result<u32, ()> {
-    match std::env::var("AOC_YEAR") {
-        Ok(x) => {
-            let x= x.parse::<u32>();
-            match x {
-                Ok(x) => Ok(x),
-                Err(_) => Err(()),
-            }
-        },
-        Err(_) => Err(()),
+pub fn get_year() -> Option<u32> {
+    let config_path = get_config_path();
+    let config_contents = read_config(&config_path);
+    if let Err(()) = config_contents {
+        process::exit(1);
     }
+    let config_contents = config_contents.unwrap();
+    let year: String = config_contents
+        .lines()
+        .filter(|s| s.contains("AOC_YEAR"))
+        .collect();
+    let year: Vec<&str> = year.split("\"").collect();
+    let year = year.get(year.len() - 2).unwrap();
+    year.parse::<u32>().ok()
 }
 
 pub fn get_year_exit_on_fail() -> u32 {
     let year = get_year();
-    if year.is_err() {
-        eprintln!("{}", crate::YEAR_NOT_FOUND_ERROR_MSG);
+    if year.is_none() {
+        eprintln!("Failed to get the currently set AOC year");
         std::process::exit(1);
     }
     year.unwrap()
 }
+
+fn get_config_path() -> PathBuf {
+    let config_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
+        .unwrap()
+        .join("..")
+        .join(".cargo")
+        .join("config.toml");
+    config_path.canonicalize().unwrap()
+}
+
+fn read_config(filepath: &PathBuf) -> Result<String, ()> {
+    let f = fs::read_to_string(filepath);
+    if f.is_err() {
+        eprintln!("failed to read Cargo.toml");
+        return Err(());
+    }
+    Ok(f.unwrap())
+}
+
 
 /// Creates the constant `DAY` and sets up the input and runner for each part.
 ///
