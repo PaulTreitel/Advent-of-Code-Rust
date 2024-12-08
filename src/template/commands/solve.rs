@@ -10,7 +10,7 @@ pub fn handle(day: Day, release: bool, dhat: bool, submit_part: Option<u8>) {
         "-p".to_string(),
         year,
         "--bin".to_string(),
-        day.to_string()
+        day.to_string(),
     ];
 
     if dhat {

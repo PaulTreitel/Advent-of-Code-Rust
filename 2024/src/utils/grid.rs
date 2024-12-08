@@ -256,11 +256,11 @@ impl<T: GridCell> Grid<T> {
         x.into_iter()
     }
 
-    pub fn iterate_by_rows(&self) -> GridIterator<T> {
+    pub fn iter_by_rows(&self) -> GridIterator<T> {
         self.iterate_by(true)
     }
 
-    pub fn iterate_by_cols(&self) -> GridIterator<T> {
+    pub fn iter_by_cols(&self) -> GridIterator<T> {
         self.iterate_by(false)
     }
 

@@ -105,7 +105,7 @@ fn find_obstacle_loop_positions(
 }
 
 fn get_visited_set(map: &Grid<MapCell>) -> HashSet<GridPos> {
-    map.iterate_by_rows()
+    map.iter_by_rows()
         .filter(|(_, c)| *c == MapCell::Visited)
         .map(|(pos, _)| pos)
         .collect()

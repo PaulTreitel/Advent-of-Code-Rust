@@ -1,4 +1,6 @@
-use advent_of_code::template::commands::{all, attempt, download, new_year, read, scaffold, set_year, solve, time};
+use advent_of_code::template::commands::{
+    all, attempt, download, new_year, read, scaffold, set_year, solve, time,
+};
 use args::{parse, AppArguments};
 
 #[cfg(feature = "today")]
@@ -42,10 +44,10 @@ mod args {
             store: bool,
         },
         NewYear {
-            year: u32
+            year: u32,
         },
         SetYear {
-            year: u32
+            year: u32,
         },
         GetYear,
         #[cfg(feature = "today")]
@@ -89,13 +91,13 @@ mod args {
             Some("try") => AppArguments::Try {
                 day: args.free_from_str()?,
                 release: args.contains("--submit"),
-                dhat: args.contains("--dhat")
+                dhat: args.contains("--dhat"),
             },
             Some("new-year") => AppArguments::NewYear {
-                year: args.free_from_str()?
+                year: args.free_from_str()?,
             },
             Some("set-year") => AppArguments::SetYear {
-                year: args.free_from_str()?
+                year: args.free_from_str()?,
             },
             Some("get-year") => AppArguments::GetYear,
             #[cfg(feature = "today")]
@@ -146,11 +148,7 @@ fn main() {
                 dhat,
                 submit,
             } => solve::handle(day, release, dhat, submit),
-            AppArguments::Try {
-                day,
-                release,
-                dhat
-            } => attempt::handle(day, release, dhat),
+            AppArguments::Try { day, release, dhat } => attempt::handle(day, release, dhat),
             #[cfg(feature = "today")]
             AppArguments::Today => {
                 match Day::today() {

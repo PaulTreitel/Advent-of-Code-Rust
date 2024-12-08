@@ -3,11 +3,7 @@ use std::process::{Command, Stdio};
 use crate::template::Day;
 
 pub fn handle(day: Day, release: bool, dhat: bool) {
-    let mut cmd_args = vec![
-        "test".to_string(),
-        "--bin".to_string(),
-        day.to_string()
-    ];
+    let mut cmd_args = vec!["test".to_string(), "--bin".to_string(), day.to_string()];
 
     if dhat {
         cmd_args.extend([

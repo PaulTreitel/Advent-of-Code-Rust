@@ -1,4 +1,6 @@
-use advent_of_code_YEAR_NUMBER::template::commands::{all, attempt, download, read, scaffold, set_year, solve, time};
+use advent_of_code_YEAR_NUMBER::template::commands::{
+    all, attempt, download, read, scaffold, set_year, solve, time,
+};
 use args::{parse, AppArguments};
 
 #[cfg(feature = "today")]
@@ -43,7 +45,7 @@ mod args {
         },
         NewYear,
         SetYear {
-            year: u32
+            year: u32,
         },
         GetYear,
         #[cfg(feature = "today")]
@@ -87,11 +89,11 @@ mod args {
             Some("try") => AppArguments::Try {
                 day: args.free_from_str()?,
                 release: args.contains("--submit"),
-                dhat: args.contains("--dhat")
+                dhat: args.contains("--dhat"),
             },
             Some("new-year") => AppArguments::NewYear,
             Some("set-year") => AppArguments::SetYear {
-                year: args.free_from_str()?
+                year: args.free_from_str()?,
             },
             Some("get-year") => AppArguments::GetYear,
             #[cfg(feature = "today")]
@@ -99,7 +101,7 @@ mod args {
             Some(x) => {
                 eprintln!("Unknown command: {x}");
                 process::exit(1);
-            },
+            }
             None => {
                 eprintln!("No command specified.");
                 process::exit(1);
@@ -142,11 +144,7 @@ fn main() {
                 dhat,
                 submit,
             } => solve::handle(day, release, dhat, submit),
-            AppArguments::Try {
-                day,
-                release,
-                dhat
-            } => attempt::handle(day, release, dhat),
+            AppArguments::Try { day, release, dhat } => attempt::handle(day, release, dhat),
             #[cfg(feature = "today")]
             AppArguments::Today => {
                 match Day::today() {
@@ -166,11 +164,11 @@ fn main() {
             }
             AppArguments::NewYear => {
                 println!("You can only generate new year folders at the project root");
-            },
+            }
             AppArguments::SetYear { year } => {
                 set_year::handle(year);
                 println!("Set repository to AOC year {}", year);
-            },
+            }
             AppArguments::GetYear => {
                 let year = advent_of_code_YEAR_NUMBER::template::get_year_exit_on_fail();
                 println!("The repository is currently set to {}", year);

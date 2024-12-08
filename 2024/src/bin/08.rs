@@ -34,7 +34,7 @@ fn parse_input(input: &str) -> Grid<char> {
 
 fn get_antennae(map: &Grid<char>) -> HashMap<char, Vec<GridPos>> {
     let mut unique_letters: HashMap<char, Vec<GridPos>> = HashMap::new();
-    for (pos, ch) in map.iterate_by_rows() {
+    for (pos, ch) in map.iter_by_rows() {
         if ch != '.' {
             unique_letters
                 .entry(ch)

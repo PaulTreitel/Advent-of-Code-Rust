@@ -23,7 +23,7 @@ pub fn part_two(input: &str) -> Option<u32> {
 
 fn get_diagonal_matches_part_two(grid: &Grid<char>, search_str: &str) -> u32 {
     let mut diagonal_count = 0;
-    for (pos, _) in grid.iterate_by_rows() {
+    for (pos, _) in grid.iter_by_rows() {
         if pos.row == 0 || pos.col == 0 || pos.row == grid.rows() - 1 || pos.col == grid.cols() - 1
         {
             continue;
@@ -56,7 +56,7 @@ fn dir_matches(grid: &Grid<char>, pos: &GridPos, offset: (i32, i32), search_str:
 
 fn get_matches_part_one(grid: &Grid<char>, search_str: &str) -> u32 {
     let mut match_count = 0;
-    for (pos, _) in grid.iterate_by_rows() {
+    for (pos, _) in grid.iter_by_rows() {
         for offset in ALL_DOWN_DIRECTION {
             if dir_matches(grid, &pos, offset.to_offset(), search_str) {
                 match_count += 1;

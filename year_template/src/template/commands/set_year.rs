@@ -18,15 +18,13 @@ pub fn set_year(year: u32) -> bool {
         return false;
     }
     let config_contents = config_contents.unwrap();
-    let lines = config_contents
-        .lines()
-        .map(|x|
-            if !x.contains("AOC_YEAR") {
-                x
-            } else {
-                &new_aoc_year_line
-            }
-        );
+    let lines = config_contents.lines().map(|x| {
+        if !x.contains("AOC_YEAR") {
+            x
+        } else {
+            &new_aoc_year_line
+        }
+    });
     let new_contents: Vec<&str> = lines.collect();
     let new_contents = new_contents.join("\n");
 
@@ -35,6 +33,6 @@ pub fn set_year(year: u32) -> bool {
         Err(_) => {
             eprintln!("failed to write new year to the config file");
             false
-        },
+        }
     }
 }

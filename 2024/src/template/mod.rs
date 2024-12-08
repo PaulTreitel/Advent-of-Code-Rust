@@ -1,10 +1,10 @@
 use std::{env, fs, path::PathBuf, process, str::FromStr};
 
 pub mod aoc_cli;
-pub mod runner;
 pub mod commands;
 pub mod readme_benchmarks;
 pub mod run_multi;
+pub mod runner;
 pub mod timings;
 
 pub use day::*;
@@ -78,7 +78,6 @@ fn read_config(filepath: &PathBuf) -> Result<String, ()> {
     }
     Ok(f.unwrap())
 }
-
 
 /// Creates the constant `DAY` and sets up the input and runner for each part.
 ///

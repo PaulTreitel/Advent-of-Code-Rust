@@ -1,5 +1,8 @@
 use std::{
-    fs::{self}, path::PathBuf, process::{self, Command, Stdio}, str::FromStr
+    fs::{self},
+    path::{Path, PathBuf},
+    process::{self, Command, Stdio},
+    str::FromStr,
 };
 
 use crate::template::commands::set_year;
@@ -13,13 +16,15 @@ const YEAR_NUMBER_FILES: [&str; 7] = [
     "src/template/run_multi.rs",
     "src/template/template.txt",
     "src/template/commands/scaffold.rs",
-    ".cargo/config.toml"
+    ".cargo/config.toml",
 ];
 
 pub fn handle(year: u32) {
-    let project_root = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap()
+    let project_root = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
+        .unwrap()
         .join("year_template");
-    let new_root = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap()
+    let new_root = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
+        .unwrap()
         .join(format!("{}", year));
 
     copy_year_template(&project_root, &new_root);
@@ -29,8 +34,12 @@ pub fn handle(year: u32) {
     println!("Created AOC year {} workspace module", year);
 }
 
-fn copy_year_template(project_root: &PathBuf, new_root: &PathBuf) {
-    let cmd_args = vec![project_root.to_str().unwrap(), &new_root.to_str().unwrap(), "-r"];
+fn copy_year_template(project_root: &Path, new_root: &Path) {
+    let cmd_args = vec![
+        project_root.to_str().unwrap(),
+        &new_root.to_str().unwrap(),
+        "-r",
+    ];
     let mut cmd = Command::new("cp")
         .args(&cmd_args)
         .stdout(Stdio::inherit())
@@ -41,9 +50,9 @@ fn copy_year_template(project_root: &PathBuf, new_root: &PathBuf) {
     cmd.wait().unwrap();
 }
 
-fn set_year_numbers(year: u32, new_root: &PathBuf) {
+fn set_year_numbers(year: u32, new_root: &Path) {
     for filename in YEAR_NUMBER_FILES {
-        let filepath = new_root.clone().join(filename);
+        let filepath = new_root.join(filename);
 
         let original_contents = match fs::read_to_string(filepath.clone()) {
             Ok(original) => original,
@@ -75,7 +84,8 @@ fn set_year(year: u32) {
 }
 
 fn add_to_workspace(year: u32) {
-    let filepath = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap()
+    let filepath = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
+        .unwrap()
         .join("Cargo.toml");
     let original_contents = read_toml_file();
     if original_contents.is_err() {
@@ -89,10 +99,9 @@ fn add_to_workspace(year: u32) {
         Err(WriteError::Open) => (),
         Err(WriteError::Write) => {
             cleanup(year);
-            write_file(&filepath, original_contents.to_string().as_bytes())
-                .unwrap();
+            write_file(&filepath, original_contents.to_string().as_bytes()).unwrap();
             process::exit(1);
-        },
+        }
     }
 }
 
@@ -132,7 +141,7 @@ fn get_end_pos_of_members(original: &str) -> Result<usize, ()> {
         Some(i) => Ok(i + start_idx),
         None => {
             eprintln!("failed to find the end of the members section of Cargo.toml");
-            return Err(());
+            Err(())
         }
     }
 }
