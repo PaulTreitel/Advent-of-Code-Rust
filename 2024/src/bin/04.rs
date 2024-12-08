@@ -46,7 +46,10 @@ fn dir_matches(
     let mut search_target_reversed = search_target.clone();
     search_target_reversed.reverse();
     match grid.scan_direction(row, col, offset, search_str.len()) {
-        Some(search) => search_target.eq(&search) || search_target_reversed.eq(&search),
+        Some(search) => {
+            let search: Vec<char> = search.iter().map(|(_, ch)| *ch).collect();
+            search_target.eq(&search) || search_target_reversed.eq(&search)
+        },
         None => false,
     }
 }

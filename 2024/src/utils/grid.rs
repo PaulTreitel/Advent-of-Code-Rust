@@ -1,6 +1,6 @@
 use std::{
     cmp::{min, Ordering},
-    fmt::Debug,
+    fmt::{Debug, Display},
 };
 
 use super::show;
@@ -20,11 +20,29 @@ impl<GridCell> Iterator for GridIterator<GridCell> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct GridPos {
+    pub row: usize,
+    pub col: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Grid<T: GridCell> {
     grid: Vec<Vec<T>>,
     rows: usize,
     cols: usize,
+}
+
+impl GridPos {
+    pub fn new(row: usize, col: usize) -> Self {
+        GridPos { row, col }
+    }
+}
+
+impl Display for GridPos {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("({}, {})", self.row, self.col))
+    }
 }
 
 impl<T: GridCell> Grid<T> {
@@ -149,7 +167,7 @@ impl<T: GridCell> Grid<T> {
         col: usize,
         offset: (i32, i32),
         scan_len: usize,
-    ) -> Option<Vec<T>> {
+    ) -> Option<Vec<((usize, usize), T)>> {
         if offset.0 == 0 && offset.1 == 0 {
             return None;
         }
@@ -160,23 +178,24 @@ impl<T: GridCell> Grid<T> {
         for i in 0..scan_len as i32 {
             let target_row = (row as i32 + offset.0 * i) as usize;
             let target_col = (col as i32 + offset.1 * i) as usize;
-            scan_result.push(self.get(target_row, target_col)?.clone());
+            let val = self.get(target_row, target_col)?.clone();
+            scan_result.push(((target_row, target_col), val));
         }
         Some(scan_result)
     }
 
     fn max_scan_iterations(&self, row: usize, col: usize, offset: (i32, i32)) -> i32 {
         let until_rows_end = match offset.0.cmp(&0) {
-            Ordering::Less => self.rows as i32 / offset.0,
+            Ordering::Less => row as i32 / offset.0.abs(),
             Ordering::Equal => self.cols as i32,
             Ordering::Greater => (self.rows as i32 - row as i32) / offset.0,
         };
         let until_cols_end = match offset.1.cmp(&0) {
-            Ordering::Less => self.cols as i32 / offset.1,
+            Ordering::Less => col as i32 / offset.1.abs(),
             Ordering::Equal => self.rows as i32,
             Ordering::Greater => (self.cols as i32 - col as i32) / offset.1,
         };
-        min(until_cols_end, until_rows_end)
+        min(until_rows_end, until_cols_end) + 1
     }
 
     pub fn scan_direction_until(
@@ -185,7 +204,7 @@ impl<T: GridCell> Grid<T> {
         col: usize,
         offset: (i32, i32),
         stop_condition: impl Fn((usize, usize), &T) -> bool,
-    ) -> Option<Vec<T>> {
+    ) -> Option<Vec<((usize, usize), T)>> {
         if offset.0 == 0 && offset.1 == 0 {
             return None;
         }
@@ -197,11 +216,16 @@ impl<T: GridCell> Grid<T> {
         for i in 0..max_scan_len {
             let target_row = (row as i32 + offset.0 * i) as usize;
             let target_col = (col as i32 + offset.1 * i) as usize;
-            let cell = self.get(target_row, target_col)?;
-            if stop_condition((target_row, target_col), cell) {
-                break;
+            match self.get(target_row, target_col) {
+                Some(c) => {
+                    if stop_condition((target_row, target_col), c) {
+                        break;
+                    }
+                    scan_result.push(((target_row, target_col), c.clone()))
+                },
+                None => return Some(scan_result)
             }
-            scan_result.push(cell.clone());
+
         }
         Some(scan_result)
     }
