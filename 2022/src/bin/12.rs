@@ -2,7 +2,6 @@ advent_of_code_2022::solution!(12);
 
 pub fn part_one(input: &str) -> Option<i32> {
     let (map, start) = get_elevation_map(input);
-    // print_map(&map);
     let num_steps = bfs_map(map, &mut vec![(0, start)]);
     Some(num_steps)
 }
@@ -12,11 +11,10 @@ fn valid_step(a: i32, b: i32) -> bool {
 }
 
 fn bfs_map(map: Vec<Vec<i32>>, queue: &mut Vec<(i32, (i32, i32))>) -> i32 {
-    // let mut queue = vec![(0, start)];
     let mut visited: Vec<(i32, i32)> = Vec::new();
     let rows = map.len();
-    let cols = map.get(0).unwrap().len();
-    while  queue.len() > 0 {
+    let cols = map.first().unwrap().len();
+    while  !queue.is_empty() {
         let (moves, pos) = queue.remove(0);
         if visited.contains(&pos) {
             continue;
@@ -38,14 +36,14 @@ fn bfs_map(map: Vec<Vec<i32>>, queue: &mut Vec<(i32, (i32, i32))>) -> i32 {
             }
         }
     }
-    return -1;
+    -1
 }
 
 pub fn part_two(input: &str) -> Option<i32> {
     let (map, _) = get_elevation_map(input);
     let mut starts: Vec<(i32, (i32, i32))> = Vec::new();
     for row_index in 0..map.len() {
-        for col_index in 0..map.get(0).unwrap().len() {
+        for col_index in 0..map.first().unwrap().len() {
             let elevation = map.get(row_index).unwrap().get(col_index).unwrap();
             if *elevation == 0 {
                 starts.push((0, (row_index as i32, col_index as i32)));
@@ -58,24 +56,17 @@ pub fn part_two(input: &str) -> Option<i32> {
 
 fn get_elevation_map(input: &str) -> (Vec<Vec<i32>>, (i32, i32)) {
     let mut map = Vec::<Vec<i32>>::new();
-    let mut rowcount = 0;
     let mut start: (i32, i32) = (0, 0);
-    for line in input.lines() {
-        let mut colcount = 0;
+    for (rowcount, line) in input.lines().enumerate() {
         let mut map_row: Vec<i32> = Vec::new();
         let line = line.chars();
-        for ch in line {
+        for (colcount, ch) in line.enumerate() {
             map_row.push(get_height(ch));
             if ch == 'S' {
-                start = (rowcount, colcount);
-                // println!("start found at {:?}", start);
-            } else if ch == 'E' {
-                // println!("end found at ({}, {})", rowcount, colcount);
+                start = (rowcount as i32, colcount as i32);
             }
-            colcount += 1;
         }
         map.push(map_row);
-        rowcount += 1;
     }
     (map, start)
 }

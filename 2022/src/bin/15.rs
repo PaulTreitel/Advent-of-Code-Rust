@@ -1,3 +1,5 @@
+use std::cmp::{max, min};
+
 advent_of_code_2022::solution!(15);
 
 const TEST_ROW: i32 = 10;
@@ -19,7 +21,7 @@ struct Beacon {
 
 pub fn part_one(input: &str) -> Option<i32> {
     let is_real = input.len() > 1000;
-    let sensors = get_input(is_real);
+    let sensors = parse_input(is_real);
     let (sensors, beacons) = input_to_sensor_ranges(sensors);
     let (min_out, max_out) = get_furthest_out(&sensors);
     let mut count = 0;
@@ -34,7 +36,7 @@ pub fn part_one(input: &str) -> Option<i32> {
 
 pub fn part_two(input: &str) -> Option<u64> {
     let is_real = input.len() > 1000;
-    let sensors = get_input(is_real);
+    let sensors = parse_input(is_real);
     let (sensors, _) = input_to_sensor_ranges(sensors);
     let max_coord = get_max_coord(is_real);
     for row_idx in MIN_COORD..max_coord {
@@ -70,7 +72,7 @@ fn get_ranges(sensors: &Vec<(Sensor, i32)>, max_coord: i32, row: i32) -> Vec<(i3
 fn check_row(sensors: &Vec<(Sensor, i32)>, max_coord: i32, row: i32) -> Option<i32> {
     let mut bad_ranges = get_ranges(sensors, max_coord, row);
     bad_ranges.sort();
-    let mut total_range = bad_ranges.get(0).unwrap().clone();
+    let mut total_range = *bad_ranges.first().unwrap();
     bad_ranges.remove(0);
     bad_ranges.reverse();
     for idx in (0..bad_ranges.len()).rev() {
@@ -126,17 +128,13 @@ fn get_row(is_real: bool) -> i32 {
 }
 
 fn get_furthest_out(sensors: &Vec<(Sensor, i32)>) -> (i32, i32) {
-    let mut max = 0;
-    let mut min = 100_000_000;
+    let mut max_dist = 0;
+    let mut min_dist = 100_000_000;
     for (s, r) in sensors {
-        if s.x + r > max {
-            max = s.x + r;
-        }
-        if s.x - r < min {
-            min = s.x - r;
-        }
+        max_dist = max(max_dist, s.x + r);
+        min_dist = min(min_dist, s.x - r);
     }
-    (min, max)
+    (min_dist, max_dist)
 }
 
 fn input_to_sensor_ranges(input: Vec<(Sensor, Beacon)>) -> (Vec<(Sensor, i32)>, Vec<Beacon>) {
@@ -150,7 +148,7 @@ fn input_to_sensor_ranges(input: Vec<(Sensor, Beacon)>) -> (Vec<(Sensor, i32)>, 
     (sensor_ranges, beacons)
 }
 
-fn get_input(is_real: bool) -> Vec<(Sensor, Beacon)> {
+fn parse_input(is_real: bool) -> Vec<(Sensor, Beacon)> {
     if is_real {
         vec![
             (Sensor { x: 1326566, y: 3575946 }, Beacon { x: 1374835, y: 2000000 }),

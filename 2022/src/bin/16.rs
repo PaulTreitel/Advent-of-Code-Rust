@@ -29,7 +29,6 @@ pub fn part_two(input: &str) -> Option<i32> {
     let _dists = floyd_warshall(&graph, |_| 1).ok().unwrap();
     let nonzero_valve_ct: u32 = graph.node_weights()
         .filter(|&x| *x > 0)
-        .map(|x| *x)
         .count() as u32;
     println!("{:?}", graph);
     for _i in 1..i32::pow(2, nonzero_valve_ct) + 1 {
@@ -57,8 +56,7 @@ fn part_one_solve(
         .insert(start);
     let mut max_pressure = 0;
 
-    while !to_visit.is_empty() {
-        let curr = to_visit.pop().unwrap();
+    while let Some(curr) = to_visit.pop() {
         if curr.opened.len() == graph.node_count() {
             max_pressure = max(curr.released, max_pressure);
             continue;
@@ -116,7 +114,7 @@ fn get_graph(
         line.next();
         line.next();
         let mut neighbors = Vec::new();
-        while let Some(valve_name) = line.next() {
+        for valve_name in line {
             neighbors.push(valve_name.replace(",", ""));
         }
         let new_node = graph.add_node(rate);

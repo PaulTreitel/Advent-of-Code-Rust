@@ -4,8 +4,8 @@ pub fn part_one(input: &str) -> Option<u32> {
     let mut total_priority = 0;
     for line in input.lines() {
         let sack_halves = split_rucksack(line);
-        let shared_item = get_shared_char_two_bags(sack_halves).expect("Error: no shared charater");
-        let priority = char_to_priority(shared_item).expect("Error: invalid item");
+        let shared_item = get_shared_char_two_bags(sack_halves).unwrap();
+        let priority = char_to_priority(shared_item).unwrap();
         total_priority += priority;
     }
     Some(total_priority)
@@ -16,9 +16,9 @@ pub fn part_two(input: &str) -> Option<u32> {
     let mut input2 = input.lines();
 
     for _ in input.lines().enumerate().step_by(3) {
-        let sack_one: &str = input2.next().expect("Error: sack one missing");
-        let sack_two: &str = input2.next().expect("Error: sack two missing");
-        let sack_three: &str = input2.next().expect("Error: sack three missing");
+        let sack_one: &str = input2.next().unwrap();
+        let sack_two: &str = input2.next().unwrap();
+        let sack_three: &str = input2.next().unwrap();
         let shared_item = get_shared_char_three_bags((sack_one, sack_two, sack_three)).unwrap();
         let priority = char_to_priority(shared_item).unwrap();
         total_priority += priority;
@@ -44,21 +44,11 @@ fn split_rucksack(sack: &str) -> (&str, &str) {
 }
 
 fn get_shared_char_three_bags(sack: (&str, &str, &str)) -> Option<char> {
-    for sack0_item in sack.0.chars() {
-        if sack.1.contains(sack0_item) && sack.2.contains(sack0_item) {
-            return Some(sack0_item);
-        }
-    }
-    None
+    sack.0.chars().find(|&sack0_item| sack.1.contains(sack0_item) && sack.2.contains(sack0_item))
 }
 
 fn get_shared_char_two_bags(sack: (&str, &str)) -> Option<char> {
-    for sack0_item in sack.0.chars() {
-        if sack.1.contains(sack0_item) {
-            return Some(sack0_item);
-        }
-    }
-    None
+    sack.0.chars().find(|&sack0_item| sack.1.contains(sack0_item))
 }
 
 #[cfg(test)]

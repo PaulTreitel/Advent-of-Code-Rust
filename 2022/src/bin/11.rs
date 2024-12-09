@@ -8,9 +8,8 @@ struct Monkey {
     throw_false: usize,
 }
 
-pub fn part_one(_input: &str) -> Option<u64> {
-    let real = _input.len() > 750;
-    let mut monkeys = get_monkeys(real);
+pub fn part_one(input: &str) -> Option<u64> {
+    let mut monkeys = get_monkeys(input);
     let mut num_inspections: Vec<u64> = vec![0; monkeys.len()];
     let update_relief = |x: u64| x / 3;
     for _ in 0..20 {
@@ -25,13 +24,13 @@ pub fn part_one(_input: &str) -> Option<u64> {
     }
     num_inspections.sort();
     num_inspections.reverse();
-    let result = num_inspections.get(0).unwrap() * num_inspections.get(1).unwrap();
+    let result = num_inspections.first().unwrap() * num_inspections.get(1).unwrap();
     Some(result)
 }
 
 fn monkey_turn(m: &mut Monkey, update_relief: fn(u64) -> u64) -> Vec<(u64, usize)> {
     let mut result: Vec<(u64, usize)> = Vec::new();
-    while m.items.len() > 0 {
+    while !m.items.is_empty() {
         let mut item = m.items.pop().unwrap();
         item = (m.update_worry)(item);
         item = (update_relief)(item);
@@ -45,9 +44,8 @@ fn monkey_turn(m: &mut Monkey, update_relief: fn(u64) -> u64) -> Vec<(u64, usize
     result
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    let real = _input.len() > 750;
-    let mut monkeys = get_monkeys(real);
+pub fn part_two(input: &str) -> Option<u64> {
+    let mut monkeys = get_monkeys(input);
     let mut num_inspections: Vec<u64> = vec![0; monkeys.len()];
     let update_relief = |x: u64| x;
     let max_wrap: u64 = monkeys.iter().map(|m| m.test_num).product();
@@ -66,100 +64,101 @@ pub fn part_two(_input: &str) -> Option<u64> {
     }
     num_inspections.sort();
     num_inspections.reverse();
-    let result = num_inspections.get(0).unwrap() * num_inspections.get(1).unwrap();
+    let result = num_inspections.first().unwrap() * num_inspections.get(1).unwrap();
     Some(result)
 }
 
-fn get_monkeys(real_input:bool) -> Vec<Monkey> {
-    let mut result: Vec<Monkey> = Vec::new();
-    if real_input {
-        result.push(Monkey{
-            items: vec![66, 79],
-            update_worry: |x| x * 11,
-            test_num: 7,
-            throw_true: 6,
-            throw_false: 7,
-        });
-        result.push(Monkey{
-            items: vec![84, 94, 94, 81, 98, 75],
-            update_worry: |x| x * 17,
-            test_num: 13,
-            throw_true: 5,
-            throw_false: 2,
-        });
-        result.push(Monkey{
-            items: vec![85, 79, 59, 64, 79, 95, 67],
-            update_worry: |x| x + 8,
-            test_num: 5,
-            throw_true: 4,
-            throw_false: 5,
-        });
-        result.push(Monkey{
-            items: vec![70],
-            update_worry: |x| x + 3,
-            test_num: 19,
-            throw_true: 6,
-            throw_false: 0,
-        });
-        result.push(Monkey{
-            items: vec![57, 69, 78, 78],
-            update_worry: |x| x + 4,
-            test_num: 2,
-            throw_true: 0,
-            throw_false: 3,
-        });
-        result.push(Monkey{
-            items: vec![65, 92, 60, 74, 72],
-            update_worry: |x| x + 7,
-            test_num: 11,
-            throw_true: 3,
-            throw_false: 4,
-        });
-        result.push(Monkey{
-            items: vec![77, 91, 91],
-            update_worry: |x| x * x,
-            test_num: 17,
-            throw_true: 1,
-            throw_false: 7,
-        });
-        result.push(Monkey{
-            items: vec![76, 58, 57, 55, 67, 77, 54, 99],
-            update_worry: |x| x + 6,
-            test_num: 3,
-            throw_true: 2,
-            throw_false: 1,
-        });
+fn get_monkeys(input: &str) -> Vec<Monkey> {
+    if input.len() > 750 {
+        vec![
+            Monkey{
+                items: vec![66, 79],
+                update_worry: |x| x * 11,
+                test_num: 7,
+                throw_true: 6,
+                throw_false: 7,
+            },
+            Monkey{
+                items: vec![84, 94, 94, 81, 98, 75],
+                update_worry: |x| x * 17,
+                test_num: 13,
+                throw_true: 5,
+                throw_false: 2,
+            },
+            Monkey{
+                items: vec![85, 79, 59, 64, 79, 95, 67],
+                update_worry: |x| x + 8,
+                test_num: 5,
+                throw_true: 4,
+                throw_false: 5,
+            },
+            Monkey{
+                items: vec![70],
+                update_worry: |x| x + 3,
+                test_num: 19,
+                throw_true: 6,
+                throw_false: 0,
+            },
+            Monkey{
+                items: vec![57, 69, 78, 78],
+                update_worry: |x| x + 4,
+                test_num: 2,
+                throw_true: 0,
+                throw_false: 3,
+            },
+            Monkey{
+                items: vec![65, 92, 60, 74, 72],
+                update_worry: |x| x + 7,
+                test_num: 11,
+                throw_true: 3,
+                throw_false: 4,
+            },
+            Monkey{
+                items: vec![77, 91, 91],
+                update_worry: |x| x * x,
+                test_num: 17,
+                throw_true: 1,
+                throw_false: 7,
+            },Monkey{
+                items: vec![76, 58, 57, 55, 67, 77, 54, 99],
+                update_worry: |x| x + 6,
+                test_num: 3,
+                throw_true: 2,
+                throw_false: 1,
+            },
+        ]
     } else {
-        result.push(Monkey{
-            items: vec![79, 98],
-            update_worry: |x| x * 19,
-            test_num: 23,
-            throw_true: 2,
-            throw_false: 3,
-        });
-        result.push(Monkey{
-            items: vec![54, 65, 75, 74],
-            update_worry: |x| x + 6,
-            test_num: 19,
-            throw_true: 2,
-            throw_false: 0,
-        });
-        result.push(Monkey{
-            items: vec![79, 60, 97],
-            update_worry: |x| x * x,
-            test_num: 13,
-            throw_true: 1,
-            throw_false: 3,
-        });
-        result.push(Monkey{
-            items: vec![74],
-            update_worry: |x| x + 3,
-            test_num: 17,
-            throw_true: 0,
-            throw_false: 1,
-        });
+        vec![
+            Monkey{
+                items: vec![79, 98],
+                update_worry: |x| x * 19,
+                test_num: 23,
+                throw_true: 2,
+                throw_false: 3,
+            },
+            Monkey{
+                items: vec![54, 65, 75, 74],
+                update_worry: |x| x + 6,
+                test_num: 19,
+                throw_true: 2,
+                throw_false: 0,
+            },
+            Monkey{
+                items: vec![79, 60, 97],
+                update_worry: |x| x * x,
+                test_num: 13,
+                throw_true: 1,
+                throw_false: 3,
+            },
+            Monkey{
+                items: vec![74],
+                update_worry: |x| x + 3,
+                test_num: 17,
+                throw_true: 0,
+                throw_false: 1,
+            },
+        ]
     }
-    result
 }
 
 #[cfg(test)]

@@ -1,3 +1,5 @@
+use advent_of_code_2022::utils::parse;
+
 advent_of_code_2022::solution!(14);
 
 #[derive(Clone)]
@@ -32,13 +34,11 @@ fn add_floor(grid: &mut Vec<Vec<Space>>) {
     let mut end_rock_row = grid.len();
     for row_index in (0..grid.len()).rev() {
         for space in grid.get(row_index).unwrap() {
-            match space {
-                Space::Rock => {
-                    end_rock_row = row_index;
-                    break;
-                }
-                _ => (),
-            };
+            if let Space::Rock = space {
+
+                end_rock_row = row_index;
+                break;
+            }
         }
         if end_rock_row != grid.len() {
             break;
@@ -53,69 +53,47 @@ fn add_floor(grid: &mut Vec<Vec<Space>>) {
 fn run_sand(grid: &mut Vec<Vec<Space>>) -> i32 {
     let mut pos = (0, 500);
     loop {
-        match grid.get(pos.0).unwrap().get(pos.1).unwrap() {
-            Space::Sand => {return 1;},
-            _ => (),
+
+        if let Space::Sand = grid.get(pos.0).unwrap().get(pos.1).unwrap() {
+            return 1;
         };
-        if pos.0 == grid.len() - 1 || (pos.1 as i32) < 0 || pos.1 >= grid.get(0).unwrap().len() {
+        if pos.0 == grid.len() - 1 || (pos.1 as i32) < 0
+            || pos.1 >= grid.first().unwrap().len()
+        {
             return 1;
         }
-        let next = grid.get_mut(pos.0 + 1).unwrap().get_mut(pos.1).unwrap();
-        match next {
-            Space::Empty => {
-                pos = (pos.0 + 1, pos.1);
-                continue;
-            }
-            _ => (),
-        };
-        let next = grid.get_mut(pos.0 + 1).unwrap().get_mut(pos.1 - 1).unwrap();
-        match next {
-            Space::Empty => {
-                pos = (pos.0 + 1, pos.1 - 1);
-                continue;
-            }
-            _ => (),
-        };
-        let next = grid.get_mut(pos.0 + 1).unwrap().get_mut(pos.1 + 1).unwrap();
+        let row_above = grid.get_mut(pos.0 + 1).unwrap();
+        if let Space::Empty = row_above.get_mut(pos.1).unwrap() {
+            pos = (pos.0 + 1, pos.1);
+            continue;
+        }
+        if let Space::Empty = row_above.get_mut(pos.1 - 1).unwrap() {
+            pos = (pos.0 + 1, pos.1 - 1);
+            continue;
+        }
+        let next = row_above.get_mut(pos.1 + 1).unwrap();
         match next {
             Space::Empty => {
                 pos = (pos.0 + 1, pos.1 + 1);
                 continue;
             }
             _ => {
-                let curr = grid.get_mut(pos.0).unwrap().get_mut(pos.1).unwrap();
-                *curr = Space::Sand;
+                *grid.get_mut(pos.0).unwrap().get_mut(pos.1).unwrap() = Space::Sand;
                 return 0;
             },
         };
     }
 }
 
-/*
-fn print_paths(paths: &Vec<Vec<(i32, i32)>>) {
-    for path in paths {
-        for pt in path {
-            print!("({}, {}) -> ", pt.0, pt.1);
-        }
-        println!();
-    }
-}
-*/
-
 fn get_paths(input: &str) -> Vec<Vec<(i32, i32)>> {
-    let mut paths: Vec<Vec<(i32, i32)>> = Vec::new();
-    for line in input.lines() {
-        let mut row: Vec<(i32, i32)> = Vec::new();
-        for point in line.split(" -> ") {
-            let mut nums = point.split(",");
-            let nums: (i32, i32) = (
-                nums.next().unwrap().parse().unwrap(),
-                nums.next().unwrap().parse().unwrap()
-            );
-            row.push((nums.1, nums.0));
+    let paths = parse::into_2d_array(
+        input,
+        |l| l.split(" -> ").collect(),
+        |pt| {
+            let tmp: Vec<i32> = pt.split(",").map(|s| s.parse::<i32>().unwrap()).collect();
+            (*tmp.get(1).unwrap(), *tmp.first().unwrap())
         }
-        paths.push(row);
-    }
+    );
     paths
 }
 
@@ -123,10 +101,9 @@ fn construct_matrix(rock_paths: &Vec<Vec<(i32, i32)>>) -> Vec<Vec<Space>> {
     let mut matrix: Vec<Vec<Space>> = vec![vec![Space::Empty; 700]; 400];
     for path in rock_paths {
         for index in 0..path.len() - 1 {
-            let mut start = path.get(index).unwrap().clone();
-            let end = path.get(index + 1).unwrap().clone();
+            let mut start = *path.get(index).unwrap();
+            let end = *path.get(index + 1).unwrap();
             let dir = ((end.0 - start.0).signum(), (end.1 - start.1).signum());
-            // println!("{:?}, {:?} -> {:?}", start, end, dir);
             while start != end {
                 let tmp = matrix.get_mut(start.0 as usize).unwrap().get_mut(start.1 as usize).unwrap();
                 *tmp = Space::Rock;
@@ -137,21 +114,6 @@ fn construct_matrix(rock_paths: &Vec<Vec<(i32, i32)>>) -> Vec<Vec<Space>> {
     }
     matrix
 }
-
-/*
-fn print_matrix(matrix: &Vec<Vec<Space>>) {
-    for row in matrix {
-        for item in row {
-            print!("{}", match *item {
-                Space::Empty => ".",
-                Space::Rock => "#",
-                Space::Sand => "o",
-            });
-        }
-        println!();
-    }
-}
-*/
 
 #[cfg(test)]
 mod tests {

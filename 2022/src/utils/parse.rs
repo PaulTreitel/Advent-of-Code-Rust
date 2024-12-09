@@ -46,3 +46,11 @@ pub fn into_2d_array<T: Clone, F: Copy + Fn(&&str) -> T>(
         .map(|x| separator(x).iter().map(converter).collect())
         .collect()
 }
+
+pub fn split_by_all_chars(s: &str) -> Vec<&str> {
+    s.split("").filter(|&s| !s.eq("")).collect()
+}
+
+pub fn to_first_char(s: &&str) -> char {
+    s.chars().next().unwrap()
+}

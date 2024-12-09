@@ -1,6 +1,6 @@
 advent_of_code_2022::solution!(7);
 
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, path::{Path, PathBuf}};
 
 const DIRSIZE_FILTER: i32 = 100000;
 const DISKSPACE: i32 = 70000000;
@@ -14,8 +14,8 @@ struct Directory {
 pub fn part_one(input: &str) -> Option<i32> {
     let fs_contents = build_filesystem_hashmap(input);
     let result: i32 = fs_contents
-        .iter()
-        .map(|(_, dir)| dir.size)
+        .values()
+        .map(|dir| dir.size)
         .filter(|x| *x < DIRSIZE_FILTER)
         .sum();
     Some(result)
@@ -35,16 +35,16 @@ fn build_filesystem_hashmap(input: &str) -> HashMap<String, Directory> {
             let name = format!("{}{}", curr_path.to_str().unwrap(), parts.next().unwrap());
             handle_dir(&mut fs_contents, &curr_path, &name);
         } else {
-            add_sizes(&mut fs_contents, &mut curr_path, first.parse().unwrap());
+            add_sizes(&mut fs_contents, &curr_path, first.parse().unwrap());
         }
     }
     fs_contents
 }
 
-fn add_sizes(fs_contents: &mut HashMap<String, Directory>, path: &PathBuf, size: i32) {
+fn add_sizes(fs_contents: &mut HashMap<String, Directory>, path: &Path, size: i32) {
     let mut path_str = path.to_str().unwrap();
     fs_contents.get_mut(path_str).unwrap().size += size;
-    let mut path = path.clone();
+    let mut path = path.to_path_buf();
     while path.parent().is_some() {
         path.pop();
         path_str = path.to_str().unwrap();
@@ -52,7 +52,7 @@ fn add_sizes(fs_contents: &mut HashMap<String, Directory>, path: &PathBuf, size:
     }
 }
 
-fn handle_dir(fs_contents: &mut HashMap<String, Directory>, curr_path: &PathBuf, name: &String) {
+fn handle_dir(fs_contents: &mut HashMap<String, Directory>, curr_path: &Path, name: &String) {
     let new_subdir = Directory{ size: 0, child_dirs: Vec::new() };
     fs_contents.get_mut(&curr_path.to_str().unwrap().to_string())
         .unwrap()
@@ -82,7 +82,7 @@ pub fn part_two(input: &str) -> Option<i32> {
         .map(|d| d.1.size)
         .collect::<Vec<i32>>();
     candidate_dirs.sort();
-    Some(*candidate_dirs.get(0).unwrap())
+    Some(*candidate_dirs.first().unwrap())
 }
 
 #[cfg(test)]

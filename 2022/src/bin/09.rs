@@ -1,7 +1,9 @@
+use advent_of_code_2022::utils::direction::Direction;
+
 advent_of_code_2022::solution!(9);
 
 struct Move {
-    direction: (i32, i32),
+    direction: Direction,
     num_steps: i32,
 }
 
@@ -25,12 +27,11 @@ fn run_moves(current_position: &mut Vec<(i32, i32)>, moves: Vec<Move>) -> Option
 fn get_locations_from_move(pos: &mut Vec<(i32, i32)>, m: Move) -> Vec<(i32, i32)> {
     let mut result: Vec<(i32, i32)> = Vec::new();
     for _ in 0..m.num_steps {
-        pos.get_mut(0).unwrap().0 += m.direction.0;
-        pos.get_mut(0).unwrap().1 += m.direction.1;
-        let new_result: Option<(i32, i32)> = update_rope(pos);
-        match new_result {
-            Some(p) => result.push(p),
-            None => (),
+        let dir = m.direction.to_offset();
+        pos.get_mut(0).unwrap().0 += dir.0;
+        pos.get_mut(0).unwrap().1 += dir.1;
+        if let Some(new_result) = update_rope(pos) {
+            result.push(new_result)
         }
     }
     result
@@ -38,17 +39,17 @@ fn get_locations_from_move(pos: &mut Vec<(i32, i32)>, m: Move) -> Vec<(i32, i32)
 
 fn update_rope(pos: &mut Vec<(i32, i32)>) -> Option<(i32, i32)> {
     let tmp = pos.len();
-    let mut head_knot = &mut pos.get(0).unwrap().clone();
+    let mut head_knot = &mut pos.first().unwrap().clone();
     let mut count = 0;
-    for x in pos {//.iter().enumerate() {
+    for x in pos {
         if count == 0 {
             count += 1;
             continue;
         }
         if count == tmp - 1 {
-            return update_knot(&head_knot, x);
+            return update_knot(head_knot, x);
         }
-        update_knot(&head_knot, x);
+        update_knot(head_knot, x);
         head_knot = x;
         count += 1;
     }
@@ -61,9 +62,9 @@ fn update_knot(start: &(i32, i32), end: &mut (i32, i32)) -> Option<(i32, i32)> {
         return None;
     }
     if diffs.0 == 0 {
-        end.1 = end.1 + diffs.1 / 2;
+        end.1 += diffs.1 / 2;
     } else if diffs.1 == 0 {
-        end.0 = end.0 + diffs.0 / 2;
+        end.0 += diffs.0 / 2;
     } else {
         let pos_change = (diffs.0 / diffs.0.abs(), diffs.1 / diffs.1.abs());
         *end = (end.0 + pos_change.0, end.1 + pos_change.1);
@@ -93,16 +94,16 @@ fn get_move_list(input: &str) -> Vec<Move> {
     moves
 }
 
-fn direction_from_letter(letter: &str) -> Option<(i32, i32)> {
+fn direction_from_letter(letter: &str) -> Option<Direction> {
     let letter = letter.chars().next().unwrap();
     if letter == 'R' {
-        return Some((0, 1));
+        return Some(Direction::Right);
     } else if letter == 'U' {
-        return Some((1, 0))
+        return Some(Direction::Down)
     } else if letter == 'D' {
-        return Some((-1, 0));
+        return Some(Direction::Up);
     } else if letter == 'L' {
-        return Some((0, -1))
+        return Some(Direction::Left)
     }
     None
 }

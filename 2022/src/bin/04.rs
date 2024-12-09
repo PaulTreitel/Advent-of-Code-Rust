@@ -30,7 +30,7 @@ fn elf_range_fully_contains(elf1: (i32, i32), elf2: (i32, i32)) -> bool {
 }
 
 fn elf_range_overlaps(elf1: (i32, i32), elf2: (i32, i32)) -> bool {
-    (elf1.1 >= elf2.0 && elf1.0 <= elf2.1) || (elf2.1 >= elf1.0 && elf2.0 <= elf1.1)
+    !(elf1.1 < elf2.0 || elf1.0 > elf2.1) || (elf2.1 >= elf1.0 && elf2.0 <= elf1.1)
 }
 
 fn parse_input(input: &str) -> Vec<((i32, i32), (i32, i32))> {

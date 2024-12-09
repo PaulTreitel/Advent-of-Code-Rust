@@ -32,7 +32,7 @@ pub fn part_one(input: &str) -> Option<i32> {
 fn get_signals(instructions: Vec<Instruction>) -> (Vec<i32>, Vec<Vec<char>>) {
     let mut signals: Vec<i32> = Vec::new();
     let crt: Vec<Vec<char>> = vec![vec!['.'; 40]; 6];
-    let mut comms = Communicator{ cycle: 0, x_reg: 1, crt: crt };
+    let mut comms = Communicator{ cycle: 0, x_reg: 1, crt };
     for instr in instructions {
         if instr.name == NOOP {
             signals.push(cycle(&mut comms));

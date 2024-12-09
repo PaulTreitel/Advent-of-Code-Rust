@@ -7,25 +7,21 @@ struct ProcedureStep {
 }
 
 pub fn part_one(input: &str) -> Option<String> {
-    let mut result = String::new();
     let mut stacks = get_stacks(input);
-    let steps = get_steps(&input);
+    let steps = get_steps(input);
     for step in steps {
         for _ in 0..step.num_boxes {
             let tmp = stacks[step.start_stack].pop().unwrap();
             stacks[step.end_stack].push(tmp);
         }
     }
-    for stack in stacks {
-        result.push(*stack.get(stack.len() - 1).unwrap());
-    }
+    let result = stacks.iter().map(|s| s.last().unwrap()).collect();
     Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<String> {
-    let mut result = String::new();
     let mut stacks = get_stacks(input);
-    let steps = get_steps(&input);
+    let steps = get_steps(input);
     for step in steps {
         let mut temp_stack: Vec<char> = Vec::new();
         for _ in 0..step.num_boxes {
@@ -35,9 +31,7 @@ pub fn part_two(input: &str) -> Option<String> {
             stacks[step.end_stack].push(temp_stack.pop().unwrap());
         }
     }
-    for stack in stacks {
-        result.push(*stack.get(stack.len() - 1).unwrap());
-    }
+    let result = stacks.iter().map(|s| s.last().unwrap()).collect();
     Some(result)
 }
 
