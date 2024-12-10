@@ -9,7 +9,8 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Option<(usize, GridPos)> {
-        self.bfs_internal(start, has_edge, matches, true, false).first().copied()
+        self.bfs(start, has_edge, matches, true, false)
+            .first().copied()
     }
 
     fn bfs_find_all_matches(
@@ -18,7 +19,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Vec<(usize, GridPos)> {
-        self.bfs_internal(start, has_edge, matches, false, false)
+        self.bfs(start, has_edge, matches, false, false)
     }
 
     fn bfs_dfs_full(
@@ -27,7 +28,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
     ) -> HashMap<GridPos, (usize, &T)> {
         let mut all: Vec<(usize, GridPos)> = self
-            .bfs_internal(start, has_edge, |_, _| true, false, true)
+            .bfs(start, has_edge, |_, _| true, false, true)
             .iter()
             .map(|(i, p)| (*i, *p))
             .collect();
@@ -45,7 +46,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Option<(usize, GridPos)> {
-        self.dfs_internal(start, has_edge, matches, true, false).first().copied()
+        self.dfs(start, has_edge, matches, true, false).first().copied()
     }
 
     fn dfs_find_all_matches(
@@ -54,13 +55,13 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Vec<(usize, GridPos)> {
-        self.dfs_internal(start, has_edge, matches, false, false)
+        self.dfs(start, has_edge, matches, false, false)
     }
 }
 
 /* Necessary Helper Functions For BFS/DFS */
 impl<T: GridCell> Grid<T> {
-    fn bfs_internal(
+    fn bfs(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -68,43 +69,18 @@ impl<T: GridCell> Grid<T> {
         only_find_first: bool,
         continue_on_match: bool,
     ) -> Vec<(usize, GridPos)> {
-        let mut result = vec![];
-        let mut queue = VecDeque::new();
-        let mut visited = HashSet::new();
-        queue.push_back((0, *start));
-        if matches(start, self.get(start).unwrap()) {
-            result.push((0, *start));
-        }
-        while let Some((i, pos)) = queue.pop_front() {
-            visited.insert(pos);
-            let curr = (&pos, self.get(&pos).unwrap());
-            let new_positions = pos.get_orthogonal_neighbors();
-            for new_pos in new_positions {
-                if !self.is_valid_cell(&new_pos) {
-                    continue;
-                }
-                let new = (&new_pos, self.get(&new_pos).unwrap());
-                if !has_edge(curr, new) {
-                    continue;
-                }
-                if matches(&new_pos, new.1) {
-                    if only_find_first {
-                        return vec![(i + 1, *new.0)];
-                    } else {
-                        result.push((i + 1, *new.0));
-                    }
-                    if continue_on_match && !visited.contains(&new_pos) {
-                        queue.push_back((i + 1, new_pos));
-                    }
-                } else if !visited.contains(&new_pos) {
-                    queue.push_back((i + 1, new_pos));
-                }
-            }
-        }
-        result
+        self.bfs_dfs_internal(
+            start,
+            has_edge,
+            matches,
+            only_find_first,
+            continue_on_match,
+            VecDeque::new(),
+            |s, i| s.push_back(i),
+            |s| s.pop_front())
     }
 
-    fn dfs_internal(
+    fn dfs(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -112,17 +88,43 @@ impl<T: GridCell> Grid<T> {
         only_find_first: bool,
         continue_on_match: bool,
     ) -> Vec<(usize, GridPos)> {
+        self.bfs_dfs_internal(
+            start,
+            has_edge,
+            matches,
+            only_find_first,
+            continue_on_match,
+            Vec::new(),
+            |s, i| s.push(i),
+            |s| s.pop())
+    }
+
+    fn bfs_dfs_internal<Storage: Clone>(
+        &self,
+        start: &GridPos,
+        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        matches: impl Fn(&GridPos, &T) -> bool,
+        only_find_first: bool,
+        continue_on_match: bool,
+        queue_stack: Storage,
+        qs_insert: impl Fn(&mut Storage, (usize, GridPos)),
+        qs_remove: impl Fn(&mut Storage) -> Option<(usize, GridPos)>,
+    ) -> Vec<(usize, GridPos)> {
         let mut result = vec![];
-        let mut stack = vec![];
         let mut visited = HashSet::new();
-        stack.push((0, *start));
+        let mut queue_stack = queue_stack.clone();
+        qs_insert(&mut queue_stack, (0, *start));
         if matches(start, self.get(start).unwrap()) {
             result.push((0, *start));
         }
-        while let Some((i, pos)) = stack.pop() {
+        while let Some((i, pos)) = qs_remove(&mut queue_stack) {
             visited.insert(pos);
             let curr = (&pos, self.get(&pos).unwrap());
-            let new_positions = pos.get_orthogonal_neighbors();
+            let new_positions = match self.graph_edge_type() {
+                super::direction::DirectionType::Orthogonal => pos.get_orthogonal_neighbors(),
+                super::direction::DirectionType::Diagonal => pos.get_diag_neighbors(),
+                super::direction::DirectionType::All => pos.get_all_neighbors(),
+            };
             for new_pos in new_positions {
                 if !self.is_valid_cell(&new_pos) {
                     continue;
@@ -138,10 +140,10 @@ impl<T: GridCell> Grid<T> {
                         result.push((i + 1, *new.0));
                     }
                     if continue_on_match && !visited.contains(&new_pos) {
-                        stack.push((i + 1, new_pos));
+                        qs_insert(&mut queue_stack, (i + 1, new_pos))
                     }
                 } else if !visited.contains(&new_pos) {
-                    stack.push((i + 1, new_pos));
+                    qs_insert(&mut queue_stack, (i + 1, new_pos))
                 }
             }
         }

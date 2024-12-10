@@ -3,7 +3,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use super::direction::Direction;
+use super::direction::{Direction, DirectionType};
 pub trait GridCell: Clone + PartialEq + Ord + Debug {}
 impl<T> GridCell for T where T: Clone + PartialEq + Ord + Debug {}
 
@@ -31,6 +31,7 @@ pub struct Grid<T: GridCell> {
     grid: Vec<Vec<T>>,
     rows: usize,
     cols: usize,
+    graph_poss_edges: DirectionType,
 }
 
 impl GridPos {
@@ -56,6 +57,27 @@ impl GridPos {
 
         vec![left, right, up, down]
     }
+
+    pub fn get_diag_neighbors(&self) -> Vec<GridPos> {
+        let mut up_left = *self;
+        let mut up_right = *self;
+        let mut down_left = *self;
+        let mut down_right = *self;
+        up_left.move_in_dir(Direction::UpLeft);
+        up_right.move_in_dir(Direction::UpRight);
+        down_left.move_in_dir(Direction::DownLeft);
+        down_right.move_in_dir(Direction::DownRight);
+
+        vec![up_left, up_right, down_left, down_right]
+    }
+
+    pub fn get_all_neighbors(&self) -> Vec<GridPos> {
+        vec![
+            self.get_orthogonal_neighbors(),
+            self.get_diag_neighbors()
+        ]
+            .iter().flatten().copied().collect()
+    }
 }
 
 impl Display for GridPos {
@@ -75,7 +97,7 @@ impl<T: GridCell> Grid<T> {
         } else if cols == 0 {
             panic!("Grid is empty!")
         }
-        Grid { grid, rows, cols }
+        Grid { grid, rows, cols, graph_poss_edges: DirectionType::Orthogonal }
     }
 
     pub fn new(rows: usize, cols: usize, default: T) -> Self {
@@ -87,7 +109,7 @@ impl<T: GridCell> Grid<T> {
             }
             grid.push(row);
         }
-        Grid { grid, rows, cols }
+        Grid { grid, rows, cols, graph_poss_edges: DirectionType::Orthogonal }
     }
 
     fn rows_same_len(grid: &Vec<Vec<T>>) -> bool {
@@ -168,6 +190,14 @@ impl<T: GridCell> Grid<T> {
 
     pub fn grid_clone(&self) -> Vec<Vec<T>> {
         self.grid.clone()
+    }
+
+    pub fn set_graph_edge_type(&mut self, edgetype: DirectionType) {
+        self.graph_poss_edges = edgetype;
+    }
+
+    pub fn graph_edge_type(&self) -> DirectionType {
+        self.graph_poss_edges
     }
 
     pub fn valid_directional_scan(
@@ -302,6 +332,7 @@ impl<T: GridCell> Grid<T> {
             grid: new_grid,
             rows: self.rows,
             cols: self.cols,
+            graph_poss_edges: DirectionType::Orthogonal,
         }
     }
 

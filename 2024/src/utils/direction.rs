@@ -47,6 +47,13 @@ pub enum Direction {
     DownRight,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum DirectionType {
+    Orthogonal,
+    Diagonal,
+    All,
+}
+
 impl Direction {
     pub fn from_offset(offsets: (i32, i32)) -> Option<Self> {
         let (row, col) = offsets;
@@ -107,5 +114,15 @@ impl Direction {
             Direction::DownRight => Direction::UpRight,
             Direction::UpRight => Direction::UpLeft,
         };
+    }
+}
+
+impl DirectionType {
+    pub fn list_directions(&self) -> std::slice::Iter<'_, Direction> {
+        match self {
+            DirectionType::Orthogonal => ORTHOGONAL_DIRECTIONS.iter(),
+            DirectionType::Diagonal => DIAG_DIRECTIONS.iter(),
+            DirectionType::All => ALL_DIRECTIONS.iter(),
+        }
     }
 }
