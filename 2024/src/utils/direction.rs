@@ -1,4 +1,4 @@
-pub const CARDINAL_DIRECTIONS: [Direction; 4] = [
+pub const ORTHOGONAL_DIRECTIONS: [Direction; 4] = [
     Direction::Up,
     Direction::Down,
     Direction::Left,
@@ -26,7 +26,7 @@ pub const ALL_DIRECTIONS: [Direction; 8] = [
  * orthogonally and just down-left/down-right diagonally to avoid getting
  * duplicates from scanning the same sequence from above and below
  */
-pub const CARDINAL_DOWN_RIGHT_DIRECTIONS: [Direction; 2] = [Direction::Down, Direction::Right];
+pub const ORTHOGONAL_DOWN_RIGHT_DIRECTIONS: [Direction; 2] = [Direction::Down, Direction::Right];
 pub const DIAG_DOWN_DIRECTIONS: [Direction; 2] = [Direction::DownLeft, Direction::DownLeft];
 pub const ALL_DOWN_DIRECTION: [Direction; 4] = [
     Direction::Down,

@@ -3,7 +3,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use super::show;
+use super::{direction::Direction, show};
 pub trait GridCell: Clone + PartialEq + Ord + Debug {}
 impl<T> GridCell for T where T: Clone + PartialEq + Ord + Debug {}
 
@@ -36,6 +36,12 @@ pub struct Grid<T: GridCell> {
 impl GridPos {
     pub fn new(row: usize, col: usize) -> Self {
         GridPos { row, col }
+    }
+
+    pub fn move_in_dir(&mut self, dir: Direction) -> &mut Self {
+        self.row = (self.row as i32 + dir.to_offset().0) as usize;
+        self.col = (self.col as i32 + dir.to_offset().1) as usize;
+        self
     }
 }
 
