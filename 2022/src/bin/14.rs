@@ -30,7 +30,7 @@ pub fn part_two(input: &str) -> Option<i32> {
     Some(count)
 }
 
-fn add_floor(grid: &mut Vec<Vec<Space>>) {
+fn add_floor(grid: &mut [Vec<Space>]) {
     let mut end_rock_row = grid.len();
     for row_index in (0..grid.len()).rev() {
         for space in grid.get(row_index).unwrap() {
@@ -50,7 +50,7 @@ fn add_floor(grid: &mut Vec<Vec<Space>>) {
     }
 }
 
-fn run_sand(grid: &mut Vec<Vec<Space>>) -> i32 {
+fn run_sand(grid: &mut [Vec<Space>]) -> i32 {
     let mut pos = (0, 500);
     loop {
 
@@ -97,7 +97,7 @@ fn get_paths(input: &str) -> Vec<Vec<(i32, i32)>> {
     paths
 }
 
-fn construct_matrix(rock_paths: &Vec<Vec<(i32, i32)>>) -> Vec<Vec<Space>> {
+fn construct_matrix(rock_paths: &[Vec<(i32, i32)>]) -> Vec<Vec<Space>> {
     let mut matrix: Vec<Vec<Space>> = vec![vec![Space::Empty; 700]; 400];
     for path in rock_paths {
         for index in 0..path.len() - 1 {

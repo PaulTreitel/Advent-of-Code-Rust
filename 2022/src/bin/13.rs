@@ -13,7 +13,7 @@ pub fn part_one(input: &str) -> Option<i32> {
     let packet_pairs = get_packets(input);
     for index in 0..packet_pairs.len() {
         let (left, right) = packet_pairs.get(index).unwrap();
-        if packets_in_order(left, &right) != Ordering::Greater {
+        if packets_in_order(left, right) != Ordering::Greater {
             index_sum += index + 1;
         }
     }
@@ -100,7 +100,7 @@ fn parse_packet(s: &str) -> Packet {
                     c == ',' && stack == 0
                 })
                 .filter(|s| !s.is_empty())
-                .map(|s| parse_packet(s))
+                .map(parse_packet)
                 .collect(),
         )
     } else {

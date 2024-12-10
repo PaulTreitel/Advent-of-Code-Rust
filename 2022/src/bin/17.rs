@@ -2,7 +2,7 @@ advent_of_code_2022::solution!(17);
 
 use std::collections::{HashMap, HashSet};
 
-#[derive(Debug, Hash, Eq, Clone)]
+#[derive(Debug, Hash, Eq, Clone, PartialEq)]
 struct Point {
     x: i64,
     y: i64,
@@ -24,6 +24,7 @@ enum MoveType {
 }
 
 const ROCK_ORDER: [RockType; 5] = [RockType::Row, RockType::Cross, RockType::L, RockType::Col, RockType::Square];
+const PART_TWO_TARGET: i64 = 1_000_000_000_000;
 
 
 pub fn part_one(input: &str) -> Option<i32> {
@@ -41,7 +42,7 @@ pub fn part_one(input: &str) -> Option<i32> {
 }
 
 pub fn part_two(input: &str) -> Option<i64> {
-    let mut target: i64 = 1_000_000_000_000;
+    let mut target = PART_TWO_TARGET;
     let moves = get_move_sequence(input);
     let mut highest = [-1; 7];
     let mut move_idx: i32 = 0;
@@ -56,30 +57,30 @@ pub fn part_two(input: &str) -> Option<i64> {
     let mut pattern_height_diff = 0;
     let mut base_iter = 0;
     let mut base_height = 0;
-    for i in 0..5*moves.len() {
-        add_rock(i as i64, &moves, &mut highest, &mut move_idx, &mut state);
+    for i in 0..5*moves.len() as i64 {
+        add_rock(i, &moves, &mut highest, &mut move_idx, &mut state);
         let curr_height = 1 + *highest.iter().max_by(|x, y| x.cmp(y)).unwrap();
         if heights.contains_key(&(move_idx, (i % 5) as i32)) {
             let old = heights.get(&(move_idx, (i % 5) as i32)).unwrap();
             if !heights_match(&highest, &old.2) {
                 continue;
             }
-            pattern_iters = i as i64 - old.0;
+            pattern_iters = i - old.0;
             pattern_height_diff = curr_height - old.1;
             base_iter = old.0;
             base_height = old.1 - 1;
             start = i + 1;
             break;
         }
-        heights.insert((move_idx, (i % 5) as i32), (i as i64, curr_height, highest));
+        heights.insert((move_idx, (i % 5) as i32), (i, curr_height, highest));
     }
 
     target -= base_iter;
-    let estimate = pattern_height_diff * (target / pattern_iters as i64) + base_height;
-    let curr_height = highest.iter().max_by(|x, y| x.cmp(y)).unwrap().clone();
+    let estimate = pattern_height_diff * (target / pattern_iters) + base_height;
+    let curr_height = highest.iter().max_by(|x, y| x.cmp(y)).unwrap();
 
-    for i in start as i64..start as i64 + target % pattern_iters as i64 {
-        add_rock(i as i64, &moves, &mut highest, &mut move_idx, &mut state);
+    for i in start..start + target % pattern_iters {
+        add_rock(i, &moves, &mut highest.clone(), &mut move_idx, &mut state);
     }
     let final_height = *highest.iter().max_by(|x, y| x.cmp(y)).unwrap();
     println!("base iteration {}, base height {}, {} iterations in pattern, pattern height {}, {} repeats, {} left, {} est",
@@ -87,30 +88,22 @@ pub fn part_two(input: &str) -> Option<i64> {
         base_height,
         pattern_iters,
         pattern_height_diff,
-        target / pattern_iters as i64,
-        target % pattern_iters as i64,
+        target / pattern_iters,
+        target % pattern_iters,
         estimate);
     println!("curr_height {}, final_height {}", curr_height, final_height);
     Some(estimate + (final_height - curr_height))
 }
 
-impl PartialEq for Point {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
-    }
-}
-
 fn heights_match(current: &[i64; 7], old: &[i64; 7]) -> bool {
-    let current = current.clone();
-    let old = old.clone();
-    let diffs: Vec<i64> = current.clone()
-        .iter()
-        .zip(old.iter())
-        .map(|(x, y)| x - y)
+    let diffs: Vec<i64> = (0..7)
+        .map(|idx| {
+            current.get(idx).unwrap() - old.get(idx).unwrap()
+        })
         .collect();
-    let base_diff = diffs.get(0).unwrap();
-    for i in 1..7 {
-        if diffs.get(i).unwrap() != base_diff {
+    let first = *diffs.first().unwrap();
+    for d in diffs {
+        if d != first {
             return false;
         }
     }
@@ -119,11 +112,11 @@ fn heights_match(current: &[i64; 7], old: &[i64; 7]) -> bool {
 
 fn add_rock(
     iter: i64,
-    moves: &Vec<MoveType>,
+    moves: &[MoveType],
     highest: &mut [i64; 7],
     move_idx: &mut i32,
     state: &mut HashSet<Point>,
-) -> () {
+) {
     let rocktype = ROCK_ORDER.get(iter as usize % 5).unwrap();
     let bottom_pos = 4 + *highest.iter().max_by(|x, y| x.cmp(y)).unwrap();
     let mut rock = new_rock(bottom_pos, rocktype);
@@ -146,14 +139,14 @@ fn add_rock(
             }
         }
         let intersect: HashSet<&Point> = state.intersection(&new_rock).collect();
-        if new_rock.len() == rock.len() && intersect.len() == 0 {
+        if new_rock.len() == rock.len() && intersect.is_empty() {
             rock = new_rock;
         }
         new_rock = rock.iter()
             .map(|p| Point { x: p.x, y: p.y - 1 })
             .collect();
         let intersect: HashSet<&Point> = state.intersection(&new_rock).collect();
-        if intersect.len() == 0 {
+        if intersect.is_empty() {
             rock = new_rock;
         } else {
             for p in rock.clone() {
@@ -168,52 +161,50 @@ fn add_rock(
 }
 
 fn new_rock(bottom_pos: i64, rock: &RockType) -> HashSet<Point> {
-    let mut new_rock = HashSet::new();
     match *rock {
         RockType::Row => {
-            for i in 2..6 {
-                new_rock.insert(Point { x: i, y: bottom_pos });
-            }
+            HashSet::from_iter((2..6).map(|x| Point { x, y: bottom_pos }))
         },
         RockType::Col => {
-            for i in 0..4 {
-                new_rock.insert(Point { x: 2, y: bottom_pos + i });
-            }
+            HashSet::from_iter((0..4).map(|ymod| Point { x: 2, y: bottom_pos + ymod}))
         },
         RockType::L => {
-            for i in 2..5 {
-                new_rock.insert(Point { x: i, y: bottom_pos });
-            }
+            let mut new_rock = HashSet::from_iter(
+                (2..5).map(|x| Point { x, y: bottom_pos })
+            );
             new_rock.insert(Point { x: 4, y: bottom_pos + 1 });
             new_rock.insert(Point { x: 4, y: bottom_pos + 2 });
+            new_rock
         },
         RockType::Cross => {
-            new_rock.insert(Point { x: 3, y: bottom_pos });
-            new_rock.insert(Point { x: 3, y: bottom_pos + 1 });
-            new_rock.insert(Point { x: 3, y: bottom_pos + 2 });
-            new_rock.insert(Point { x: 4, y: bottom_pos + 1 });
-            new_rock.insert(Point { x: 2, y: bottom_pos + 1 });
+            HashSet::from_iter(vec![
+                Point { x: 3, y: bottom_pos },
+                Point { x: 3, y: bottom_pos + 1 },
+                Point { x: 3, y: bottom_pos + 2 },
+                Point { x: 4, y: bottom_pos + 1 },
+                Point { x: 2, y: bottom_pos + 1 },
+            ])
         },
         RockType::Square => {
-            new_rock.insert(Point { x: 2, y: bottom_pos });
-            new_rock.insert(Point { x: 3, y: bottom_pos });
-            new_rock.insert(Point { x: 2, y: bottom_pos + 1 });
-            new_rock.insert(Point { x: 3, y: bottom_pos + 1 });
+            HashSet::from_iter(vec![
+                Point { x: 2, y: bottom_pos },
+                Point { x: 3, y: bottom_pos },
+                Point { x: 2, y: bottom_pos + 1 },
+                Point { x: 3, y: bottom_pos + 1 }
+            ])
         },
     }
-    new_rock
 }
 
 fn get_move_sequence(input: &str) -> Vec<MoveType> {
-    let mut moves = Vec::new();
-    for ch in input.chars() {
-        if ch == '<' {
-            moves.push(MoveType::Left);
-        } else if ch == '>' {
-            moves.push(MoveType::Right)
-        }
-    }
-    moves
+    input
+        .chars()
+        .map(|c| match c {
+            '<' => MoveType::Left,
+            '>' => MoveType::Right,
+            _ => unreachable!()
+        })
+        .collect()
 }
 
 #[cfg(test)]

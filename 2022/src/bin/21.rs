@@ -2,7 +2,6 @@ advent_of_code_2022::solution!(21);
 
 use std::collections::HashMap;
 
-
 #[derive(Debug, Clone)]
 enum Operation {
     Value(i64),
@@ -16,15 +15,12 @@ pub fn part_one(input: &str) -> Option<i64> {
     let monkeys = get_monkeys(input);
     let mut vals: HashMap<String, i64> = HashMap::new();
     while !vals.contains_key("root") {
-        let mut remove = Vec::new();
         for m in monkeys.keys() {
-            let op = monkeys.get(m).unwrap();
             if vals.contains_key(m) {
                 continue;
             }
-            if check_do_operation(&mut vals, op, m.to_string()) {
-                remove.push(m);
-            }
+            let operation = monkeys.get(m).unwrap();
+            let _ = check_do_operation(&mut vals, operation, m.to_string());
         }
     }
     Some(*vals.get("root").unwrap())
@@ -38,40 +34,44 @@ pub fn part_two(input: &str) -> Option<i64> {
     while !vals.contains_key("root") {
         let mut made_op = false;
         for m in monkeys.keys() {
-            let op = monkeys.get(m).unwrap();
+            let operation = monkeys.get(m).unwrap();
             if vals.contains_key(m) {
                 continue;
             }
-            made_op = made_op || check_do_operation(&mut vals, op, m.to_string());
+            made_op = made_op || check_do_operation(&mut vals, operation, m.to_string());
         }
         if !made_op {
             break;
         }
     }
 
-    let root = monkeys.get("root").unwrap();
-    let mut current;
-    let mut target = match root {
+    let (current, target) = match monkeys.get("root").unwrap() {
         Operation::Add(m1, m2) => {
             if vals.contains_key(m1) {
-                current = monkeys.get(m2).unwrap();
-                *vals.get(m1).unwrap()
+                (monkeys.get(m2).unwrap(), *vals.get(m1).unwrap())
             } else {
-                current = monkeys.get(m1).unwrap();
-                *vals.get(m2).unwrap()
+                (monkeys.get(m1).unwrap(), *vals.get(m2).unwrap())
             }
         },
-        _ => {
-            unreachable!("root not add!");
-        }
+        _ => unreachable!("root not add!")
     };
 
+    Some(reverse_find_humn_value(&vals, &monkeys, current, target))
+}
+
+fn reverse_find_humn_value(
+    vals: &HashMap<String, i64>,
+    monkeys: &HashMap<String, Operation>,
+    current: &Operation,
+    target:i64
+) -> i64 {
+    let mut current = &current.clone();
+    let mut target = target;
     loop {
         match current {
             Operation::Add(m1, m2) => {
                 if m2 == "humn" {
-                    let val1 = vals.get(m1).unwrap();
-                    return Some(target - val1);
+                    return target - vals.get(m1).unwrap();
                 } else if vals.get(m1).is_some() {
                     target -= vals.get(m1).unwrap();
                     current = monkeys.get(m2).unwrap();
@@ -82,8 +82,7 @@ pub fn part_two(input: &str) -> Option<i64> {
             },
             Operation::Sub(m1, m2) => {
                 if m1 == "humn" {
-                    let val2 = vals.get(m2).unwrap();
-                    return Some(*val2 + target);
+                    return *vals.get(m2).unwrap() + target;
                 } else if vals.get(m1).is_some() {
                     target = vals.get(m1).unwrap() - target;
                     current = monkeys.get(m2).unwrap();
@@ -110,11 +109,8 @@ pub fn part_two(input: &str) -> Option<i64> {
                     current = monkeys.get(m1).unwrap();
                 }
             },
-            _ => {
-                unreachable!("found entry that's constant!");
-            }
+            _ => unreachable!("found entry that's constant!")
         }
-        // println!("{}", target);
     }
 }
 
@@ -126,88 +122,63 @@ fn check_do_operation(
     match operation {
         Operation::Value(v) => {
             vals.insert(monkey, *v);
-            true
+            return true;
         },
         Operation::Add(m1, m2) => {
-            let val1 = vals.get(m1);
-            let val2 = vals.get(m2);
-            if val1.is_some() && val2.is_some() {
-                // println!("{}: adding {} from {} and {} from {} to get {}",
-                //     monkey, val1.unwrap(), m1, val2.unwrap(), m2, val1.unwrap() + val2.unwrap());
-                vals.insert(monkey, val1.unwrap() + val2.unwrap());
-                true
-            } else {
-                false
+            if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
+                vals.insert(monkey, val1 + val2);
+                return true;
             }
         },
         Operation::Div(m1, m2) => {
-            let val1 = vals.get(m1);
-            let val2 = vals.get(m2);
-            if val1.is_some() && val2.is_some() {
-                // println!("{}: dividing {} from {} and {} from {} to get {}",
-                //     monkey, val1.unwrap(), m1, val2.unwrap(), m2, val1.unwrap() / val2.unwrap());
-                vals.insert(monkey, val1.unwrap() / val2.unwrap());
-                true
-            } else {
-                false
+            if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
+                vals.insert(monkey, val1 / val2);
+                return true;
             }
         },
         Operation::Mul(m1, m2) => {
-            let val1 = vals.get(m1);
-            let val2 = vals.get(m2);
-            if val1.is_some() && val2.is_some() {
-                // println!("{}: multiplying {} from {} and {} from {} to get {}",
-                //     monkey, val1.unwrap(), m1, val2.unwrap(), m2, val1.unwrap() * val2.unwrap());
-                vals.insert(monkey, val1.unwrap() * val2.unwrap());
-                true
-            } else {
-                false
+            if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
+                vals.insert(monkey, val1 * val2);
+                return true;
             }
         },
         Operation::Sub(m1, m2) => {
-            let val1 = vals.get(m1);
-            let val2 = vals.get(m2);
-            if val1.is_some() && val2.is_some() {
-                // println!("{}: subtracting {} from {} and {} from {} to get {}",
-                //     monkey, val1.unwrap(), m1, val2.unwrap(), m2, val1.unwrap() - val2.unwrap());
-                vals.insert(monkey, val1.unwrap() - val2.unwrap());
-                true
-            } else {
-                false
+            if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
+                vals.insert(monkey, val1 - val2);
+                return true;
             }
         },
     }
+    false
 }
 
 fn get_monkeys(input: &str) -> HashMap<String, Operation> {
     let mut monkeys = HashMap::new();
     for line in input.lines() {
         let mut line = line.split(" ");
-        let mut name = line.next().unwrap().chars();
-        name.next_back();
-        let name = name.as_str().to_string();
+        let name = line.next().unwrap();
+        let name = name[..name.len() - 1].to_string();
         let op1 = line.next().unwrap();
         if op1.parse::<i64>().is_ok() {
             monkeys.insert(name, Operation::Value(op1.parse::<i64>().unwrap()));
         } else {
+            let op1 = op1.to_string();
             let op2 = line.next().unwrap().chars().next().unwrap();
-            let op3 = line.next().unwrap();
+            let op3 = line.next().unwrap().to_string();
             match op2 {
                 '+' => {
-                    monkeys.insert(name, Operation::Add(op1.to_string(), op3.to_string()))
+                    monkeys.insert(name, Operation::Add(op1, op3))
                 },
                 '-' => {
-                    monkeys.insert(name, Operation::Sub(op1.to_string(), op3.to_string()))
+                    monkeys.insert(name, Operation::Sub(op1, op3))
                 },
                 '*' => {
-                    monkeys.insert(name, Operation::Mul(op1.to_string(), op3.to_string()))
+                    monkeys.insert(name, Operation::Mul(op1, op3))
                 },
                 '/' => {
-                    monkeys.insert(name, Operation::Div(op1.to_string(), op3.to_string()))
+                    monkeys.insert(name, Operation::Div(op1, op3))
                 },
-                _ => {
-                    panic!("symbol is {}, not math symbol", op2)
-                },
+                _ => unreachable!(),
             };
         }
     }

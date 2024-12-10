@@ -20,7 +20,7 @@ pub fn part_one(input: &str) -> Option<i32> {
     Some(total)
 }
 
-fn visible_on_col(forest: &Grid<u32>, visible: &mut Vec<Vec<bool>>, col_index: usize) {
+fn visible_on_col(forest: &Grid<u32>, visible: &mut [Vec<bool>], col_index: usize) {
     let mut max_seen = 0;
     for row_index in 0..forest.rows() {
         let tree = forest.get(&GridPos::new(row_index, col_index)).unwrap();
@@ -40,7 +40,7 @@ fn visible_on_col(forest: &Grid<u32>, visible: &mut Vec<Vec<bool>>, col_index: u
     }
 }
 
-fn visible_on_row(visibility_row: &mut Vec<bool>, row: &Vec<&u32>) {
+fn visible_on_row(visibility_row: &mut [bool], row: &[&u32]) {
     let mut max_seen = 0;
     for (index, &tree) in row.iter().enumerate() {
         if *tree > max_seen || (*tree == 0 && index == 0) {

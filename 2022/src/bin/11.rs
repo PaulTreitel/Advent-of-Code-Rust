@@ -30,8 +30,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 
 fn monkey_turn(m: &mut Monkey, update_relief: fn(u64) -> u64) -> Vec<(u64, usize)> {
     let mut result: Vec<(u64, usize)> = Vec::new();
-    while !m.items.is_empty() {
-        let mut item = m.items.pop().unwrap();
+    while let Some(mut item) = m.items.pop() {
         item = (m.update_worry)(item);
         item = (update_relief)(item);
 
