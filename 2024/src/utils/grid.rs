@@ -3,7 +3,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use super::{direction::Direction, show};
+use super::direction::Direction;
 pub trait GridCell: Clone + PartialEq + Ord + Debug {}
 impl<T> GridCell for T where T: Clone + PartialEq + Ord + Debug {}
 
@@ -42,6 +42,19 @@ impl GridPos {
         self.row = (self.row as i32 + dir.to_offset().0) as usize;
         self.col = (self.col as i32 + dir.to_offset().1) as usize;
         self
+    }
+
+    pub fn get_orthogonal_neighbors(&self) -> Vec<GridPos> {
+        let mut left = *self;
+        let mut right = *self;
+        let mut up = *self;
+        let mut down = *self;
+        left.move_in_dir(Direction::Left);
+        right.move_in_dir(Direction::Right);
+        up.move_in_dir(Direction::Up);
+        down.move_in_dir(Direction::Down);
+
+        vec![left, right, up, down]
     }
 }
 
@@ -151,6 +164,10 @@ impl<T: GridCell> Grid<T> {
 
     pub fn is_valid_cell(&self, pos: &GridPos) -> bool {
         pos.row < self.rows && pos.col < self.cols
+    }
+
+    pub fn grid_clone(&self) -> Vec<Vec<T>> {
+        self.grid.clone()
     }
 
     pub fn valid_directional_scan(
@@ -294,16 +311,5 @@ impl<T: GridCell> Grid<T> {
             Ordering::Less => Ordering::Less,
             Ordering::Greater => Ordering::Greater,
         }
-    }
-
-    pub fn print(&self) {
-        let mut cells: Vec<Vec<&T>> = Vec::new();
-        for row_idx in 0..self.rows {
-            let row: Vec<&T> = (0..self.cols)
-                .map(|col_idx| self.get(&GridPos::new(row_idx, col_idx)).unwrap())
-                .collect();
-            cells.push(row);
-        }
-        show::pretty_print_2d_vecs(&cells);
     }
 }
