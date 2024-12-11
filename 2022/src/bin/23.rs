@@ -74,7 +74,7 @@ fn make_moves(moves: &HashMap<(i32, i32), Vec<(i32, i32)>>, elves: &mut HashSet<
         if mv.1.len() > 1 {
             continue;
         }
-        elves.remove(mv.1.get(0).unwrap());
+        elves.remove(mv.1.first().unwrap());
         elves.insert(*mv.0);
         moves_made += 1
     }
@@ -106,11 +106,11 @@ fn get_moves(
                 // println!("elf {:?} can't propose to go {:?}", elf, dir);
                 continue;
             }
-            if moves.contains_key(&proposed_cell) {
-                moves.get_mut(&proposed_cell).unwrap().push(*elf);
+            if let std::collections::hash_map::Entry::Vacant(e) = moves.entry(proposed_cell) {
+                e.insert(vec![*elf]);
                 break;
             } else {
-                moves.insert(proposed_cell, vec![*elf]);
+                moves.get_mut(&proposed_cell).unwrap().push(*elf);
                 break;
             }
         }

@@ -17,7 +17,7 @@ pub fn part_two(_input: &str) -> Option<i32> {
 
 fn vals_to_snafu(place_vals: &HashMap<u32, i8>) -> String {
     let mut chars = Vec::new();
-    let mut places: Vec<u32> = place_vals.keys().map(|x| *x).collect();
+    let mut places: Vec<u32> = place_vals.keys().copied().collect();
     places.sort();
     let max_place = places.pop().unwrap();
     for p in (0..max_place+1).rev() {

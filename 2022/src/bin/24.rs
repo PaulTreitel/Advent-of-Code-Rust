@@ -143,7 +143,7 @@ fn get_blizzards_bounds(input: &str) -> (HashSet<(i32, i32, Direction)>, (i32, i
         line.next();
         line.next_back();
         let mut col_idx = 0;
-        while let Some(c) = line.next() {
+        for c in line {
             match c {
                 '#' => {
                     break;

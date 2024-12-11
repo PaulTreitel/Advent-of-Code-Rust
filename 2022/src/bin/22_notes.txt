@@ -1,0 +1,229 @@
+               A
+              (2)
+             / |
+           /   |
+ B     C /     |
+(1)----(4)----(4) D
+         \     | \
+           \   |   \
+             \ |     \
+              (3)----(2)
+               E      F
+
+A -> F needs F to reverse
+    A enters right, F enters right
+
+B -> C -> A = arrive left, left => top - ERROR 1        -> Right, UpRight => top
+A -> C -> B = arrive top, right => top - ERROR 2        -> DownLeft, Left => top
+B -> C -> E = arrive left, left => bottom - ERROR 1     -> Right, DownRight => bottom
+E -> C -> B = arrive left, right => bottom              -> UpLeft, Left => bottom
+A -> D -> F = arrive top, top => right - ERROR 3        -> Down, DownRight => right
+F -> D -> A = arrive right, bottom => right             -> UpLeft, Up => right
+B -> A -> F = arrive top, right => bottom - ERROR 2     -> ???, ??? => bottom
+F -> A -> B = arrive right, top => left - ERROR 4       -> ???, ??? => left
+
+
+A -> C -> D is top, top => left - ERROR 3               -> Down, DownLeft => left
+D -> C -> A is left, bottom => left                     -> UpRight, Up => left
+B -> C -> E is right, top => right - ERROR 4            -> DownLeft, Down => right
+E -> C -> B is bottom, top => right                     -> Up, UpRight => right
+A -> D -> F is left, top => left                        -> DF???, Down => left
+F -> D -> A is top, left => top                         -> Up, FD??? => top
+B -> E -> F is right, right => bottom                   -> BE???, DownLeft => bottom
+F -> E -> B is bottom, right => bottom                  -> UpRight, EB??? => bottom
+
+
+can only ever have two follow-ups
+Up
+    UpRight => right
+    FD??? => top
+        FD??? == UpLeft
+Down
+    DownRight => right
+    DownLeft => left
+Left
+    DownLeft => DEPENDS on whether there's face to the right vs above
+    UpLeft => ???
+Right
+    UpRight => top
+    DownRight => ???
+UpLeft
+    Up => right
+    Left => bottom
+UpRight
+    Up => left
+    Right => bottom
+DownLeft
+    Left => top
+    Down => right
+DownRight
+s    Right => ???
+    Down => left
+BE???
+    DownLeft => bottom
+        BE??? = Left
+DF???
+    Down => left
+        DF??? = DownRight
+
+A = (0,8) on top        back
+D = (4,8) on front      top
+E = (8,8) on bottom     front
+F = (8,12) on right     right
+C = (4,4) on left       left
+B = (4,0) on back       bottom
+
+==== (0, 8) ====
+A arrives at top of D
+A arrives at top of C
+~~A arrives at right of F
+~~A arrives at top of B
+
+==== (4,0) ====
+B arrives at left of C
+~~B arrives at top of A
+~~B arrives at bottom of F
+~~B arrives at bottom of E
+
+==== (4,4) ====
+C arrives at right of B
+C arrives at left of D 
+C arrives at left of A ERROR DOWN - UP RIGHT TRANSITION
+C arrives at right of E ERROR RIGHT - DOWN RIGHT TRANSITION
+
+==== (4,8) ====
+D arrives at bottom of A
+D arrives at right of C
+D arrives at top of E
+D arrives at left of F ERROR LEFT - DOWN RIGHT TRANSITION
+
+==== (8,8) ====
+E arrives at bottom of D
+E arrives at left of F
+E arrives at bottom of C
+~~E arrives at bottom of B <----
+
+==== (8,12) ====
+F arrives at right of E
+F arrives at right of D
+~~F arrives at right of A
+~~F arrives at left of B <----
+
+(0,8) -> (4,8)
+
+(4,8) -> (0,8)
+(4,8) -> (4,4)
+(4,8) -> (8,8)
+
+(4,4) -> (4,8)
+(4,4) -> (4,0)
+
+(8,8) -> (4,8)
+(8,8) -> (8,12)
+
+(4,0) -> (4,4)
+
+(8,12) -> (8,8)
+
+=============
+
+(0,8) -> (4,4)
+
+(4,4) -> (0,8)
+(4,4) -> (8,8)
+
+(8,12) -> (4,8)
+
+(8,8) -> (4,4)
+
+(4,8) -> (8,12)
+
+
+
+
+
+
+        A      B
+       (2)----(2)
+        |    /
+        |  /
+        |/
+       (4) C
+      / |
+    /   |
+D /     |
+(3)----(3) E
+ |    /
+ |  /
+ |/
+(2) F
+
+A -> C -> D is top, top => left - ERROR 3               -> Down, DownLeft
+D -> C -> A is left, bottom => left                     -> UpRight, Up
+B -> C -> E is right, top => right - ERROR 4            -> DownLeft, Down
+E -> C -> B is bottom, top => right                     -> Up, UpRight
+A -> D -> F is left, top => left                        -> DF???, Down
+F -> D -> A is top, left => top                         -> Up, FD???
+B -> E -> F is right, right => bottom                   -> BE???, DownLeft
+F -> E -> B is bottom, right => bottom                  -> UpRight, EB???
+
+need 
+  A <-> D
+  B <-> E
+  A <-> F
+  B <-> F
+
+C is top
+A is back
+B is right
+E is front
+D is left
+F is bottom
+
+A arrives at top of C
+A arrives at left of D
+A arrives at left of B
+A arrives at left of F
+
+B arrives at right of C
+B arrives at right of E
+B arrives at right of A
+B arrives at bottom of F
+
+C arrives at bottom of A
+C arrives at top of E
+C arrives at top of B
+C arrives at top of D
+
+D arrives at left of C
+D arrives at left of A
+D arrives at left of E
+D arrives at top of F
+
+E arrives at bottom of C
+E arrives at right of B
+E arrives at right of D
+E arrives at right of F
+
+F arrives at top of D
+F arrives at bottom of E
+F arrives at top of A
+F arrives at bottom of B
+
+
+
+
+
+(x)
+ | \
+ |   \
+ |     \
+(x)----(X)----(X)
+
+
+
+(x)----(x)
+  \     |
+    \   |
+      \ |
+       (X)----(X)
