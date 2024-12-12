@@ -90,21 +90,8 @@ impl Direction {
         }
     }
 
-    pub fn turn_right(&mut self) {
-        *self = match self {
-            Direction::Up => Direction::Right,
-            Direction::Right => Direction::Down,
-            Direction::Down => Direction::Left,
-            Direction::Left => Direction::Up,
-            Direction::UpLeft => Direction::UpRight,
-            Direction::UpRight => Direction::DownRight,
-            Direction::DownRight => Direction::DownLeft,
-            Direction::DownLeft => Direction::UpLeft,
-        };
-    }
-
-    pub fn turn_left(&mut self) {
-        *self = match self {
+    pub fn left(&self) -> Self {
+        match self {
             Direction::Up => Direction::Left,
             Direction::Left => Direction::Down,
             Direction::Down => Direction::Right,
@@ -113,7 +100,20 @@ impl Direction {
             Direction::DownLeft => Direction::DownRight,
             Direction::DownRight => Direction::UpRight,
             Direction::UpRight => Direction::UpLeft,
-        };
+        }
+    }
+
+    pub fn right(&self) -> Self {
+        match self {
+            Direction::Up => Direction::Right,
+            Direction::Right => Direction::Down,
+            Direction::Down => Direction::Left,
+            Direction::Left => Direction::Up,
+            Direction::UpLeft => Direction::UpRight,
+            Direction::UpRight => Direction::DownRight,
+            Direction::DownRight => Direction::DownLeft,
+            Direction::DownLeft => Direction::UpLeft,
+        }
     }
 }
 

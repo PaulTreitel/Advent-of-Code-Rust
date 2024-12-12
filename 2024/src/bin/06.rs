@@ -49,7 +49,7 @@ fn track_guard_around_map(map: &mut Grid<MapCell>, start_pos: &GridPos) {
         if map.get(&new_pos).unwrap() != &MapCell::Obstacle {
             curr_pos = new_pos;
         } else {
-            curr_direction.turn_right();
+            curr_direction = curr_direction.right();
         }
     }
 }
@@ -72,7 +72,7 @@ fn creates_loop(map: &mut Grid<MapCell>, start_pos: &GridPos) -> bool {
             }
             positions_reached.insert((curr_pos, curr_direction));
         } else {
-            curr_direction.turn_right();
+            curr_direction = curr_direction.right();
         }
     }
     false

@@ -45,30 +45,29 @@ impl GridPos {
         self
     }
 
-    pub fn get_orthogonal_neighbors(&self) -> Vec<GridPos> {
-        let mut left = *self;
-        let mut right = *self;
-        let mut up = *self;
-        let mut down = *self;
-        left.move_in_dir(Direction::Left);
-        right.move_in_dir(Direction::Right);
-        up.move_in_dir(Direction::Up);
-        down.move_in_dir(Direction::Down);
+    pub fn position_in_dir(&self, dir: Direction) -> Self {
+        Self {
+            row: (self.row as i32 + dir.to_offset().0) as usize,
+            col:  (self.col as i32 + dir.to_offset().1) as usize
+        }
+    }
 
-        vec![left, right, up, down]
+    pub fn get_orthogonal_neighbors(&self) -> Vec<GridPos> {
+        vec![
+            self.position_in_dir(Direction::Left),
+            self.position_in_dir(Direction::Right),
+            self.position_in_dir(Direction::Up),
+            self.position_in_dir(Direction::Down)
+        ]
     }
 
     pub fn get_diag_neighbors(&self) -> Vec<GridPos> {
-        let mut up_left = *self;
-        let mut up_right = *self;
-        let mut down_left = *self;
-        let mut down_right = *self;
-        up_left.move_in_dir(Direction::UpLeft);
-        up_right.move_in_dir(Direction::UpRight);
-        down_left.move_in_dir(Direction::DownLeft);
-        down_right.move_in_dir(Direction::DownRight);
-
-        vec![up_left, up_right, down_left, down_right]
+        vec![
+            self.position_in_dir(Direction::UpLeft),
+            self.position_in_dir(Direction::UpRight),
+            self.position_in_dir(Direction::DownLeft),
+            self.position_in_dir(Direction::DownRight)
+        ]
     }
 
     pub fn get_all_neighbors(&self) -> Vec<GridPos> {
