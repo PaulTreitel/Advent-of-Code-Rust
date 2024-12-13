@@ -191,8 +191,11 @@ fn add_face_wraparounds(
 ) {
     let mut viited = Vec::new();
     for ((from, to), dir1) in face_edges {
-        if viited.contains(&(*from, *to)) || from.orthogonal_map_adjacent(to) {
+        if viited.contains(&(*from, *to)) {
             continue;
+        }
+        if from.orthogonal_map_adjacent(to) {
+            println!("avoiding {} and {} because they're adjacent", from, to);
         }
         let opp_edge = (*to, *from);
         viited.push((*from, *to));
@@ -201,15 +204,19 @@ fn add_face_wraparounds(
         let mut from_pts = points_from_face_edge(dir2, from, side_len, points);
         // TODO when do we need to reverse this?
         let mut to_pts = points_from_face_edge(dir1, to, side_len, points);
-        if *dir1 == Direction::Right && dir2.opposite() == Direction::Down {
+
+        if (*dir1 == Direction::Right && dir2.opposite() == Direction::Down)
+            || (*dir2 == Direction::Right && dir1.opposite() == Direction::Down)
+            && from.top_left.1 != to.top_left.1
+        {
             to_pts.reverse();
         }
-        if *dir2 == Direction::Right && dir1.opposite() == Direction::Down {
-            from_pts.reverse();
-        }
 
-        if *dir2 == Direction::Left && dir1.opposite() == Direction::Up {
-            from_pts.reverse();
+        if (*dir1 == Direction::Left && dir2.opposite() == Direction::Up)
+            || (*dir2 == Direction::Left && dir1.opposite() == Direction::Up)
+            && from.top_left.1 != to.top_left.1
+        {
+            to_pts.reverse();
         }
 
         for (pt_1, pt_2) in from_pts.iter().zip(&to_pts) {
@@ -239,7 +246,7 @@ fn points_from_face_edge(
     match dir {
         Direction::Up => {
             (0..side_len)
-                .map(|col| (from.top_left.0, from.top_left.1 + col))
+                .map(|col| (from.top_left.0, from.top_left.1 + col - 1))
                 .filter(|x| points.contains(x))
                 .collect::<Vec<(i32, i32)>>()
 
