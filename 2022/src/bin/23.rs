@@ -2,20 +2,18 @@ advent_of_code_2022::solution!(23);
 
 use std::collections::{HashMap, HashSet};
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-enum Direction {
-    North,
-    South,
-    West,
-    East,
-}
+use advent_of_code_2022::utils::direction::MapDirection;
 
 const NUM_ROUNDS: i32 = 10;
+const DIRECTION_ORDER: [MapDirection; 4] = [
+    MapDirection::North,
+    MapDirection::South,
+    MapDirection::West,
+    MapDirection::East
+];
 
 pub fn part_one(input: &str) -> Option<i32> {
-    let mut dir_order = vec![
-        Direction::North, Direction::South, Direction::West, Direction::East
-    ];
+    let mut dir_order = DIRECTION_ORDER.clone().to_vec();
     let mut elves = get_elves(input);
     for _ in 0..NUM_ROUNDS {
         let proposed_moves = get_moves(&dir_order, &elves);
@@ -29,9 +27,7 @@ pub fn part_one(input: &str) -> Option<i32> {
 }
 
 pub fn part_two(input: &str) -> Option<i32> {
-    let mut dir_order = vec![
-        Direction::North, Direction::South, Direction::West, Direction::East
-    ];
+    let mut dir_order = DIRECTION_ORDER.clone().to_vec();
     let mut elves = get_elves(input);
     let mut num_rounds = 0;
     loop {
@@ -82,14 +78,12 @@ fn make_moves(moves: &HashMap<(i32, i32), Vec<(i32, i32)>>, elves: &mut HashSet<
 }
 
 fn get_moves(
-    dir_order: &Vec<Direction>,
+    dir_order: &Vec<MapDirection>,
     elves: &HashSet<(i32, i32)>
 ) -> HashMap<(i32, i32), Vec<(i32, i32)>> {
     let mut moves: HashMap<(i32, i32), Vec<(i32, i32)>> = HashMap::new();
-    // let mut proposed_spaces = HashMap::new();
     for elf in elves {
         if !should_move(elves, elf) {
-            // println!("elf {:?} shouldn't move", elf);
             continue;
         }
 
@@ -103,52 +97,59 @@ fn get_moves(
                 }
             }
             if !can_propose {
-                // println!("elf {:?} can't propose to go {:?}", elf, dir);
                 continue;
             }
-            if let std::collections::hash_map::Entry::Vacant(e) = moves.entry(proposed_cell) {
-                e.insert(vec![*elf]);
-                break;
-            } else {
-                moves.get_mut(&proposed_cell).unwrap().push(*elf);
-                break;
-            }
+
+            moves
+                .entry(proposed_cell)
+                .and_modify(|x| x.push(*elf))
+                .or_insert(vec![*elf]);
+            break;
         }
     }
     moves
 }
 
 fn propose_check_cells(
-    dir: &Direction,
+    dir: &MapDirection,
     elf: &(i32, i32)
 ) -> ((i32, i32), Vec<(i32, i32)>) {
-    let mut check_cells = Vec::new();
+    let check_cells;
     let proposed_cell;
     match dir {
-        Direction::North => {
-            check_cells.extend([
-                (elf.0 - 1, elf.1 - 1), (elf.0 - 1, elf.1), (elf.0 - 1, elf.1 + 1)
-            ]);
+        MapDirection::North => {
+            check_cells = vec![
+                (elf.0 - 1, elf.1 - 1),
+                (elf.0 - 1, elf.1),
+                (elf.0 - 1, elf.1 + 1)
+            ];
             proposed_cell = (elf.0 - 1, elf.1);
         },
-        Direction::South => {
-            check_cells.extend([
-                (elf.0 + 1, elf.1 - 1), (elf.0 + 1, elf.1), (elf.0 + 1, elf.1 + 1)
-            ]);
+        MapDirection::South => {
+            check_cells = vec![
+                (elf.0 + 1, elf.1 - 1),
+                (elf.0 + 1, elf.1),
+                (elf.0 + 1, elf.1 + 1)
+            ];
             proposed_cell = (elf.0 + 1, elf.1);
         },
-        Direction::West => {
-            check_cells.extend([
-                (elf.0 - 1, elf.1 - 1), (elf.0, elf.1 - 1), (elf.0 + 1, elf.1 - 1)
-            ]);
+        MapDirection::West => {
+            check_cells = vec![
+                (elf.0 - 1, elf.1 - 1),
+                (elf.0, elf.1 - 1),
+                (elf.0 + 1, elf.1 - 1)
+            ];
             proposed_cell = (elf.0, elf.1 - 1);
         },
-        Direction::East => {
-            check_cells.extend([
-                (elf.0 - 1, elf.1 + 1), (elf.0, elf.1 + 1), (elf.0 + 1, elf.1 + 1)
-            ]);
+        MapDirection::East => {
+            check_cells = vec![
+                (elf.0 - 1, elf.1 + 1),
+                (elf.0, elf.1 + 1),
+                (elf.0 + 1, elf.1 + 1)
+            ];
             proposed_cell = (elf.0, elf.1 + 1);
         },
+        _ => unreachable!()
     };
     (proposed_cell, check_cells)
 }

@@ -1,5 +1,31 @@
 
-pub const CARDINAL_DIRECTIONS: [Direction; 4] = [
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+    UpLeft,
+    UpRight,
+    DownLeft,
+    DownRight,
+}
+
+// This is structurally equivalent to Direction and basically just aliases it
+// for cases when using map direction names makes things more clear.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum MapDirection {
+    North,
+    South,
+    East,
+    West,
+    NorthEast,
+    NorthWest,
+    SouthEast,
+    SouthWest,
+}
+
+pub const ORTHOGONAL_DIRECTIONS: [Direction; 4] = [
     Direction::Up,
     Direction::Down,
     Direction::Left,
@@ -27,7 +53,7 @@ pub const ALL_DIRECTIONS: [Direction; 8] = [
  * orthogonally and just down-left/down-right diagonally to avoid getting
  * duplicates from scanning the same sequence from above and below
  */
-pub const CARDINAL_DOWN_RIGHT_DIRECTIONS: [Direction; 2] = [Direction::Down, Direction::Right];
+pub const ORTHOGONAL_DOWN_RIGHT_DIRECTIONS: [Direction; 2] = [Direction::Down, Direction::Right];
 pub const DIAG_DOWN_DIRECTIONS: [Direction; 2] = [Direction::DownLeft, Direction::DownLeft];
 pub const ALL_DOWN_DIRECTION: [Direction; 4] = [
     Direction::Down,
@@ -36,21 +62,9 @@ pub const ALL_DOWN_DIRECTION: [Direction; 4] = [
     Direction::DownRight,
 ];
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-    UpLeft,
-    UpRight,
-    DownLeft,
-    DownRight,
-}
-
 impl Direction {
-    pub fn from_offset(offsets: (i32, i32)) -> Option<Self> {
-        let (row, col) = offsets;
+    pub fn from_offset(offset: (i32, i32)) -> Option<Self> {
+        let (row, col) = offset;
         let out = match row.cmp(&0) {
             std::cmp::Ordering::Less => match col.cmp(&0) {
                 std::cmp::Ordering::Less => Self::UpLeft,
@@ -110,7 +124,7 @@ impl Direction {
         };
     }
 
-    pub fn opposite(&self) -> Direction {
+    pub fn opposite(&self) -> Self {
         match self {
             Self::Up => Self::Down,
             Self::Down => Self::Up,
@@ -121,5 +135,46 @@ impl Direction {
             Self::DownLeft => Self::UpRight,
             Self::DownRight => Self::UpLeft,
         }
+    }
+}
+
+impl MapDirection {
+    fn from_direction(d: Direction) -> Self {
+        match d {
+            Direction::Up => Self::North,
+            Direction::Down => Self::South,
+            Direction::Left => Self::West,
+            Direction::Right => Self::East,
+            Direction::UpLeft => Self::NorthWest,
+            Direction::UpRight => Self::NorthEast,
+            Direction::DownLeft => Self::SouthWest,
+            Direction::DownRight => Self::SouthEast,
+        }
+    }
+
+    fn to_direction(&self) -> Direction {
+        match self {
+            Self::North => Direction::Up,
+            Self::South => Direction::Down,
+            Self::East => Direction::Right,
+            Self::West => Direction::Left,
+            Self::NorthEast => Direction::UpRight,
+            Self::NorthWest => Direction::UpLeft,
+            Self::SouthEast => Direction::DownRight,
+            Self::SouthWest => Direction::DownLeft,
+        }
+    }
+
+    pub fn from_offset(offset: (i32, i32)) -> Option<Self> {
+        let dir = Direction::from_offset(offset)?;
+        Some(MapDirection::from_direction(dir))
+    }
+
+    pub fn to_offset(&self) -> (i32, i32) {
+        self.to_direction().to_offset()
+    }
+
+    pub fn opposite(&self) -> Self {
+        MapDirection::from_direction(self.to_direction().opposite())
     }
 }
