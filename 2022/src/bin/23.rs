@@ -171,15 +171,12 @@ fn should_move(elves: &HashSet<(i32, i32)>, elf: &(i32, i32)) -> bool {
 
 fn get_elves(input: &str) -> HashSet<(i32, i32)> {
     let mut elves = HashSet::new();
-    let mut row = 0;
-    for line in input.lines() {
-        let line: Vec<char> = line.chars().collect();
-        for col in 0..line.len() {
-            if *line.get(col).unwrap() == '#' {
-                elves.insert((row, col as i32));
+    for (row, line) in input.lines().enumerate() {
+        for (col, ch) in line.chars().enumerate() {
+            if ch == '#' {
+                elves.insert((row as i32, col as i32));
             }
         }
-        row += 1;
     }
     elves
 }

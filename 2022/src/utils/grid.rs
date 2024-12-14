@@ -22,8 +22,10 @@ impl<GridCell> Iterator for GridIterator<GridCell> {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GridPos {
-    pub row: usize,
-    pub col: usize,
+    row: usize,
+    col: usize,
+    irow: i64,
+    icol: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -35,7 +37,57 @@ pub struct Grid<T: GridCell> {
 
 impl GridPos {
     pub fn new(row: usize, col: usize) -> Self {
-        GridPos { row, col }
+        GridPos {
+            row,
+            col,
+            irow: row as i64,
+            icol: col as i64
+        }
+    }
+
+    pub fn inew(irow: i64, icol: i64) -> Self {
+        GridPos {
+            row: irow as usize,
+            col: icol as usize,
+            irow,
+            icol
+        }
+    }
+
+    fn row(&self) -> usize {
+        self.row
+    }
+
+    fn col(&self) -> usize {
+        self.col
+    }
+
+    fn irow(&self) -> i64 {
+        self.irow
+    }
+
+    fn icol(&self) -> i64 {
+        self.icol
+    }
+
+    fn set_row(&mut self, row: usize) {
+        self.row = row;
+        self.irow = row as i64;
+    }
+
+    fn set_col(&mut self, col: usize) {
+        self.col = col;
+        self.icol = col as i64;
+    }
+
+    fn set_irow(&mut self, row: i64) {
+        self.row = row as usize;
+        self.irow = row;
+    }
+
+    fn set_icol(&mut self, col: i64) {
+        self.col = col as usize;
+        self.icol = col;
     }
 }
 
@@ -60,6 +112,7 @@ impl<T: GridCell> Grid<T> {
     }
 
     pub fn new(rows: usize, cols: usize, default: T) -> Self {
+        // Vec::from(value)
         let mut grid = Vec::with_capacity(rows);
         for _ in 0..rows {
             let mut row = Vec::with_capacity(cols);
@@ -89,7 +142,11 @@ impl<T: GridCell> Grid<T> {
         self.cols
     }
 
-    pub fn get(&self, pos: &GridPos) -> Option<&T> {
+    pub fn get(&self, row: usize, col: usize) -> Option<&T> {
+        self.grid.get(row)?.get(col)
+    }
+
+    pub fn get_pos(&self, pos: &GridPos) -> Option<&T> {
         self.grid.get(pos.row)?.get(pos.col)
     }
 
@@ -178,7 +235,7 @@ impl<T: GridCell> Grid<T> {
                 (pos.row as i32 + offset.0 * i) as usize,
                 (pos.col as i32 + offset.1 * i) as usize,
             );
-            let val = self.get(&target_pos)?.clone();
+            let val = self.get_pos(&target_pos)?.clone();
             scan_result.push((target_pos, val));
         }
         Some(scan_result)
@@ -217,7 +274,7 @@ impl<T: GridCell> Grid<T> {
                 (pos.row as i32 + offset.0 * i) as usize,
                 (pos.col as i32 + offset.1 * i) as usize,
             );
-            match self.get(&target_pos) {
+            match self.get_pos(&target_pos) {
                 Some(c) => {
                     if stop_condition(target_pos, c) {
                         break;
@@ -294,7 +351,7 @@ impl<T: GridCell> Grid<T> {
         let mut cells: Vec<Vec<&T>> = Vec::new();
         for row_idx in 0..self.rows {
             let row: Vec<&T> = (0..self.cols)
-                .map(|col_idx| self.get(&GridPos::new(row_idx, col_idx)).unwrap())
+                .map(|col_idx| self.get(row_idx, col_idx).unwrap())
                 .collect();
             cells.push(row);
         }

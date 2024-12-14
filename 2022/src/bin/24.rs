@@ -2,15 +2,7 @@ advent_of_code_2022::solution!(24);
 
 use std::collections::HashSet;
 
-
-
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
+use advent_of_code_2022::utils::direction::Direction;
 
 pub fn part_one(input: &str) -> Option<i32> {
     let (blizzs, bounds) = get_blizzards_bounds(input);
@@ -73,11 +65,8 @@ fn cross_valley(
 }
 
 fn valid_tile(bounds: &(i32, i32), pos: (i32, i32)) -> bool {
-    if pos == (-1, 0) || pos == (bounds.0, bounds.1 - 1) {
-        true
-    } else {
-        pos.0 >= 0 && pos.0 < bounds.0 && pos.1 >= 0 && pos.1 < bounds.1
-    }
+    (pos == (-1, 0) || pos == (bounds.0, bounds.1 - 1))
+    || (pos.0 >= 0 && pos.0 < bounds.0 && pos.1 >= 0 && pos.1 < bounds.1)
 }
 
 fn is_empty(blizzards: &HashSet<(i32, i32, Direction)>, pos: (i32, i32)) -> bool {
@@ -95,36 +84,38 @@ fn update_blizzards(
 ) -> HashSet<(i32, i32, Direction)> {
     let mut new_blizzards = HashSet::new();
     for blizz in blizzards {
-        match blizz.2 {
+        let new_blizzard = match blizz.2 {
             Direction::Up => {
                 if blizz.0 == 0 {
-                    new_blizzards.insert((bounds.0 - 1, blizz.1, blizz.2));
+                    (bounds.0 - 1, blizz.1, blizz.2)
                 } else {
-                    new_blizzards.insert((blizz.0 - 1, blizz.1, blizz.2));
+                    (blizz.0 - 1, blizz.1, blizz.2)
                 }
             },
             Direction::Down => {
                 if blizz.0 == bounds.0 - 1 {
-                    new_blizzards.insert((0, blizz.1, blizz.2));
+                    (0, blizz.1, blizz.2)
                 } else {
-                    new_blizzards.insert((blizz.0 + 1, blizz.1, blizz.2));
+                    (blizz.0 + 1, blizz.1, blizz.2)
                 }
             },
             Direction::Left => {
                 if blizz.1 == 0 {
-                    new_blizzards.insert((blizz.0, bounds.1 - 1, blizz.2));
+                    (blizz.0, bounds.1 - 1, blizz.2)
                 } else {
-                    new_blizzards.insert((blizz.0, blizz.1 - 1, blizz.2));
+                    (blizz.0, blizz.1 - 1, blizz.2)
                 }
             },
             Direction::Right => {
                 if blizz.1 == bounds.1 - 1 {
-                    new_blizzards.insert((blizz.0, 0, blizz.2));
+                    (blizz.0, 0, blizz.2)
                 } else {
-                    new_blizzards.insert((blizz.0, blizz.1 + 1, blizz.2));
+                    (blizz.0, blizz.1 + 1, blizz.2)
                 }
             },
+            _ => unreachable!()
         };
+        new_blizzards.insert(new_blizzard);
     }
 
     new_blizzards
@@ -142,27 +133,25 @@ fn get_blizzards_bounds(input: &str) -> (HashSet<(i32, i32, Direction)>, (i32, i
         let mut line = line.chars();
         line.next();
         line.next_back();
-        let mut col_idx = 0;
-        for c in line {
+        for (col_idx, c) in line.enumerate() {
             match c {
                 '#' => {
                     break;
                 },
                 '^' => {
-                    blizzards.insert((rows, col_idx, Direction::Up));
+                    blizzards.insert((rows, col_idx as i32, Direction::Up));
                 },
                 '>' => {
-                    blizzards.insert((rows, col_idx, Direction::Right));
+                    blizzards.insert((rows, col_idx as i32, Direction::Right));
                 },
                 'v' => {
-                    blizzards.insert((rows, col_idx, Direction::Down));
+                    blizzards.insert((rows, col_idx as i32, Direction::Down));
                 },
                 '<' => {
-                    blizzards.insert((rows, col_idx, Direction::Left));
+                    blizzards.insert((rows, col_idx as i32, Direction::Left));
                 },
                 _ => (),
             }
-            col_idx += 1;
         }
         rows += 1;
     }

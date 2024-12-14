@@ -80,15 +80,11 @@ fn sum_snafus(snafus: &mut Vec<Vec<i8>>) -> i64 {
 }
 
 fn get_snafu_numbers(input: &str) -> Vec<Vec<i8>> {
-    let mut numbers = Vec::new();
-    for line in input.lines() {
-        let mut value = Vec::new();
-        for ch in line.chars() {
-            value.push(snafu_digit_from_char(ch));
-        }
-        numbers.push(value);
-    }
-    numbers
+    input.lines()
+        .map(|x| {
+            x.chars().map(snafu_digit_from_char).collect::<Vec<i8>>()
+        })
+        .collect()
 }
 
 fn snafu_char_from_digit(d: i8) -> char {

@@ -1,4 +1,4 @@
-use advent_of_code_2022::utils::{grid::{Grid, GridPos}, parse};
+use advent_of_code_2022::utils::{grid::Grid, parse};
 
 advent_of_code_2022::solution!(8);
 
@@ -23,7 +23,7 @@ pub fn part_one(input: &str) -> Option<i32> {
 fn visible_on_col(forest: &Grid<u32>, visible: &mut [Vec<bool>], col_index: usize) {
     let mut max_seen = 0;
     for row_index in 0..forest.rows() {
-        let tree = forest.get(&GridPos::new(row_index, col_index)).unwrap();
+        let tree = forest.get(row_index, col_index).unwrap();
         if *tree > max_seen || (*tree == 0 && row_index == 0) {
             max_seen = *tree;
             *visible.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = true;
@@ -32,7 +32,7 @@ fn visible_on_col(forest: &Grid<u32>, visible: &mut [Vec<bool>], col_index: usiz
 
     let mut max_seen_bottom = 0;
     for row_index in (0..forest.rows()).rev() {
-        let tree = forest.get(&GridPos::new(row_index, col_index)).unwrap();
+        let tree = forest.get(row_index, col_index).unwrap();
         if *tree > max_seen_bottom || (*tree == 0 && row_index == forest.rows() - 1) {
             max_seen_bottom = *tree;
             *visible.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = true;
@@ -77,7 +77,7 @@ pub fn part_two(input: &str) -> Option<i32> {
 }
 
 fn get_viewing_distance(forest: &Grid<u32>, (row, col): (usize, usize)) -> Vec<i32> {
-    let start_tree = forest.get(&GridPos::new(row, col)).unwrap();
+    let start_tree = forest.get(row, col).unwrap();
     let mut view_dist: Vec<i32> = Vec::new();
     let directions: [i32; 2] = [1, -1];
     for dir in directions {
@@ -103,7 +103,7 @@ fn get_viewing_distance(forest: &Grid<u32>, (row, col): (usize, usize)) -> Vec<i
         let mut y: usize = 0;
         for _ in 1..forest.rows() {
             tmp_col += dir;
-            match forest.get(&GridPos::new(row, tmp_col as usize)) {
+            match forest.get(row, tmp_col as usize) {
                 Some(a) => {
                     if a >= start_tree && tmp_col != col as i32 {
                         y += 1;
