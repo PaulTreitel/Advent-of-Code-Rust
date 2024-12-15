@@ -15,7 +15,7 @@ pub fn part_one(input: &str) -> Option<i32> {
     let mut total = 0;
     for row_index in 0..visible.len() {
         let row = visible.get(row_index).unwrap();
-        total += row.iter().map(|x| if *x {1} else {0}).sum::<i32>();
+        total += row.iter().map(|x| if *x { 1 } else { 0 }).sum::<i32>();
     }
     Some(total)
 }
@@ -26,7 +26,11 @@ fn visible_on_col(forest: &Grid<u32>, visible: &mut [Vec<bool>], col_index: usiz
         let tree = forest.get(row_index, col_index).unwrap();
         if *tree > max_seen || (*tree == 0 && row_index == 0) {
             max_seen = *tree;
-            *visible.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = true;
+            *visible
+                .get_mut(row_index)
+                .unwrap()
+                .get_mut(col_index)
+                .unwrap() = true;
         }
     }
 
@@ -35,7 +39,11 @@ fn visible_on_col(forest: &Grid<u32>, visible: &mut [Vec<bool>], col_index: usiz
         let tree = forest.get(row_index, col_index).unwrap();
         if *tree > max_seen_bottom || (*tree == 0 && row_index == forest.rows() - 1) {
             max_seen_bottom = *tree;
-            *visible.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = true;
+            *visible
+                .get_mut(row_index)
+                .unwrap()
+                .get_mut(col_index)
+                .unwrap() = true;
         }
     }
 }
@@ -50,7 +58,7 @@ fn visible_on_row(visibility_row: &mut [bool], row: &[&u32]) {
     }
     let mut max_seen_right = 0;
     for (index, &tree) in row.iter().enumerate().rev() {
-        if *tree > max_seen_right || (*tree == 0  && index == row.len() - 1) {
+        if *tree > max_seen_right || (*tree == 0 && index == row.len() - 1) {
             max_seen_right = *tree;
             *visibility_row.get_mut(index).unwrap() = true;
         }
@@ -65,7 +73,11 @@ pub fn part_two(input: &str) -> Option<i32> {
         for col_index in 0..forest.cols() {
             let view_distances = get_viewing_distance(&forest, (row_index, col_index));
             let scenic_score = view_distances.iter().product();
-            *scenic_scores.get_mut(row_index).unwrap().get_mut(col_index).unwrap() = scenic_score;
+            *scenic_scores
+                .get_mut(row_index)
+                .unwrap()
+                .get_mut(col_index)
+                .unwrap() = scenic_score;
         }
     }
     let mut max_scenic = 0;
@@ -91,7 +103,7 @@ fn get_viewing_distance(forest: &Grid<u32>, (row, col): (usize, usize)) -> Vec<i
                         x += 1;
                         break;
                     }
-                },
+                }
                 None => {
                     break;
                 }
@@ -109,7 +121,7 @@ fn get_viewing_distance(forest: &Grid<u32>, (row, col): (usize, usize)) -> Vec<i
                         y += 1;
                         break;
                     }
-                },
+                }
                 None => {
                     break;
                 }
@@ -125,7 +137,7 @@ fn get_tables(input: &str) -> (Grid<u32>, Vec<Vec<bool>>) {
     let forest = parse::into_2d_array(
         input,
         |s| s.split("").filter(|&s| !s.eq("")).collect(),
-        |s| s.parse::<u32>().unwrap()
+        |s| s.parse::<u32>().unwrap(),
     );
     let visible: Vec<Vec<bool>> = forest
         .clone()

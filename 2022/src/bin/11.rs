@@ -54,7 +54,11 @@ pub fn part_two(input: &str) -> Option<u64> {
             *num_inspections.get_mut(monk_idx).unwrap() += throws.len() as u64;
             for (item, to_monk) in throws {
                 if item > max_wrap {
-                    monkeys.get_mut(to_monk).unwrap().items.push(item % max_wrap);
+                    monkeys
+                        .get_mut(to_monk)
+                        .unwrap()
+                        .items
+                        .push(item % max_wrap);
                 } else {
                     monkeys.get_mut(to_monk).unwrap().items.push(item);
                 }
@@ -70,55 +74,56 @@ pub fn part_two(input: &str) -> Option<u64> {
 fn get_monkeys(input: &str) -> Vec<Monkey> {
     if input.len() > 750 {
         vec![
-            Monkey{
+            Monkey {
                 items: vec![66, 79],
                 update_worry: |x| x * 11,
                 test_num: 7,
                 throw_true: 6,
                 throw_false: 7,
             },
-            Monkey{
+            Monkey {
                 items: vec![84, 94, 94, 81, 98, 75],
                 update_worry: |x| x * 17,
                 test_num: 13,
                 throw_true: 5,
                 throw_false: 2,
             },
-            Monkey{
+            Monkey {
                 items: vec![85, 79, 59, 64, 79, 95, 67],
                 update_worry: |x| x + 8,
                 test_num: 5,
                 throw_true: 4,
                 throw_false: 5,
             },
-            Monkey{
+            Monkey {
                 items: vec![70],
                 update_worry: |x| x + 3,
                 test_num: 19,
                 throw_true: 6,
                 throw_false: 0,
             },
-            Monkey{
+            Monkey {
                 items: vec![57, 69, 78, 78],
                 update_worry: |x| x + 4,
                 test_num: 2,
                 throw_true: 0,
                 throw_false: 3,
             },
-            Monkey{
+            Monkey {
                 items: vec![65, 92, 60, 74, 72],
                 update_worry: |x| x + 7,
                 test_num: 11,
                 throw_true: 3,
                 throw_false: 4,
             },
-            Monkey{
+            Monkey {
                 items: vec![77, 91, 91],
                 update_worry: |x| x * x,
                 test_num: 17,
                 throw_true: 1,
                 throw_false: 7,
-            },Monkey{
+            },
+            Monkey {
                 items: vec![76, 58, 57, 55, 67, 77, 54, 99],
                 update_worry: |x| x + 6,
                 test_num: 3,
@@ -128,28 +133,28 @@ fn get_monkeys(input: &str) -> Vec<Monkey> {
         ]
     } else {
         vec![
-            Monkey{
+            Monkey {
                 items: vec![79, 98],
                 update_worry: |x| x * 19,
                 test_num: 23,
                 throw_true: 2,
                 throw_false: 3,
             },
-            Monkey{
+            Monkey {
                 items: vec![54, 65, 75, 74],
                 update_worry: |x| x + 6,
                 test_num: 19,
                 throw_true: 2,
                 throw_false: 0,
             },
-            Monkey{
+            Monkey {
                 items: vec![79, 60, 97],
                 update_worry: |x| x * x,
                 test_num: 13,
                 throw_true: 1,
                 throw_false: 3,
             },
-            Monkey{
+            Monkey {
                 items: vec![74],
                 update_worry: |x| x + 3,
                 test_num: 17,

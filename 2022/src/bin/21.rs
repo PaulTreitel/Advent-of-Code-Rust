@@ -52,8 +52,8 @@ pub fn part_two(input: &str) -> Option<i64> {
             } else {
                 (monkeys.get(m1).unwrap(), *vals.get(m2).unwrap())
             }
-        },
-        _ => unreachable!("root not add!")
+        }
+        _ => unreachable!("root not add!"),
     };
 
     Some(reverse_find_humn_value(&vals, &monkeys, current, target))
@@ -63,7 +63,7 @@ fn reverse_find_humn_value(
     vals: &HashMap<String, i64>,
     monkeys: &HashMap<String, Operation>,
     current: &Operation,
-    target:i64
+    target: i64,
 ) -> i64 {
     let mut current = &current.clone();
     let mut target = target;
@@ -79,7 +79,7 @@ fn reverse_find_humn_value(
                     target -= vals.get(m2).unwrap();
                     current = monkeys.get(m1).unwrap();
                 }
-            },
+            }
             Operation::Sub(m1, m2) => {
                 if m1 == "humn" {
                     return *vals.get(m2).unwrap() + target;
@@ -90,7 +90,7 @@ fn reverse_find_humn_value(
                     target += vals.get(m2).unwrap();
                     current = monkeys.get(m1).unwrap();
                 }
-            },
+            }
             Operation::Mul(m1, m2) => {
                 if vals.get(m1).is_some() {
                     target /= vals.get(m1).unwrap();
@@ -99,7 +99,7 @@ fn reverse_find_humn_value(
                     target /= vals.get(m2).unwrap();
                     current = monkeys.get(m1).unwrap();
                 }
-            },
+            }
             Operation::Div(m1, m2) => {
                 if vals.get(m1).is_some() {
                     target = vals.get(m1).unwrap() / target;
@@ -108,8 +108,8 @@ fn reverse_find_humn_value(
                     target *= vals.get(m2).unwrap();
                     current = monkeys.get(m1).unwrap();
                 }
-            },
-            _ => unreachable!("found entry that's constant!")
+            }
+            _ => unreachable!("found entry that's constant!"),
         }
     }
 }
@@ -117,37 +117,37 @@ fn reverse_find_humn_value(
 fn check_do_operation(
     vals: &mut HashMap<String, i64>,
     operation: &Operation,
-    monkey: String
+    monkey: String,
 ) -> bool {
     match operation {
         Operation::Value(v) => {
             vals.insert(monkey, *v);
             return true;
-        },
+        }
         Operation::Add(m1, m2) => {
             if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
                 vals.insert(monkey, val1 + val2);
                 return true;
             }
-        },
+        }
         Operation::Div(m1, m2) => {
             if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
                 vals.insert(monkey, val1 / val2);
                 return true;
             }
-        },
+        }
         Operation::Mul(m1, m2) => {
             if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
                 vals.insert(monkey, val1 * val2);
                 return true;
             }
-        },
+        }
         Operation::Sub(m1, m2) => {
             if let (Some(val1), Some(val2)) = (vals.get(m1), vals.get(m2)) {
                 vals.insert(monkey, val1 - val2);
                 return true;
             }
-        },
+        }
     }
     false
 }
@@ -166,18 +166,10 @@ fn get_monkeys(input: &str) -> HashMap<String, Operation> {
             let op2 = line.next().unwrap().chars().next().unwrap();
             let op3 = line.next().unwrap().to_string();
             match op2 {
-                '+' => {
-                    monkeys.insert(name, Operation::Add(op1, op3))
-                },
-                '-' => {
-                    monkeys.insert(name, Operation::Sub(op1, op3))
-                },
-                '*' => {
-                    monkeys.insert(name, Operation::Mul(op1, op3))
-                },
-                '/' => {
-                    monkeys.insert(name, Operation::Div(op1, op3))
-                },
+                '+' => monkeys.insert(name, Operation::Add(op1, op3)),
+                '-' => monkeys.insert(name, Operation::Sub(op1, op3)),
+                '*' => monkeys.insert(name, Operation::Mul(op1, op3)),
+                '/' => monkeys.insert(name, Operation::Div(op1, op3)),
                 _ => unreachable!(),
             };
         }

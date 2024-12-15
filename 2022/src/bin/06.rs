@@ -20,7 +20,7 @@ fn find_start(input: &str, len: usize) -> Option<i32> {
 
 fn is_unique(chars: &[char]) -> bool {
     for index in 0..chars.len() {
-        if chars[index+1..].contains(&chars[index]) {
+        if chars[index + 1..].contains(&chars[index]) {
             return false;
         }
     }

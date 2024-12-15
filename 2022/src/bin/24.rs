@@ -19,12 +19,15 @@ pub fn part_two(input: &str) -> Option<i32> {
     Some(iter1 + iter2 + iter3)
 }
 
+type Blizzard = HashSet<(i32, i32, Direction)>;
+type Position = (i32, i32);
+
 fn cross_valley(
-    start_blizzs: HashSet<(i32, i32, Direction)>,
-    bounds: (i32, i32),
-    start: (i32, i32),
-    end: (i32, i32)
-) -> (i32, HashSet<(i32, i32, Direction)>) {
+    start_blizzs: Blizzard,
+    bounds: Position,
+    start: Position,
+    end: Position,
+) -> (i32, Blizzard) {
     let mut blizzs = start_blizzs.clone();
     let mut states = HashSet::new();
     states.insert(start);
@@ -36,26 +39,22 @@ fn cross_valley(
             if is_empty(&blizzs, pos) {
                 new_states.insert(pos);
             }
-            if is_empty(&blizzs, (pos.0 - 1, pos.1))
-                && valid_tile(&bounds, (pos.0 - 1, pos.1)) {
+            if is_empty(&blizzs, (pos.0 - 1, pos.1)) && valid_tile(&bounds, (pos.0 - 1, pos.1)) {
                 if (pos.0 - 1, pos.1) == end {
                     return (iterations + 1, blizzs);
                 }
                 new_states.insert((pos.0 - 1, pos.1));
             }
-            if is_empty(&blizzs, (pos.0 + 1, pos.1))
-                && valid_tile(&bounds, (pos.0 + 1, pos.1)) {
+            if is_empty(&blizzs, (pos.0 + 1, pos.1)) && valid_tile(&bounds, (pos.0 + 1, pos.1)) {
                 if (pos.0 + 1, pos.1) == end {
                     return (iterations + 1, blizzs);
                 }
                 new_states.insert((pos.0 + 1, pos.1));
             }
-            if is_empty(&blizzs, (pos.0, pos.1 - 1))
-                && valid_tile(&bounds, (pos.0, pos.1 - 1)) {
+            if is_empty(&blizzs, (pos.0, pos.1 - 1)) && valid_tile(&bounds, (pos.0, pos.1 - 1)) {
                 new_states.insert((pos.0, pos.1 - 1));
             }
-            if is_empty(&blizzs, (pos.0, pos.1 + 1))
-                && valid_tile(&bounds, (pos.0, pos.1 + 1)) {
+            if is_empty(&blizzs, (pos.0, pos.1 + 1)) && valid_tile(&bounds, (pos.0, pos.1 + 1)) {
                 new_states.insert((pos.0, pos.1 + 1));
             }
         }
@@ -64,24 +63,19 @@ fn cross_valley(
     }
 }
 
-fn valid_tile(bounds: &(i32, i32), pos: (i32, i32)) -> bool {
+fn valid_tile(bounds: &Position, pos: Position) -> bool {
     (pos == (-1, 0) || pos == (bounds.0, bounds.1 - 1))
-    || (pos.0 >= 0 && pos.0 < bounds.0 && pos.1 >= 0 && pos.1 < bounds.1)
+        || (pos.0 >= 0 && pos.0 < bounds.0 && pos.1 >= 0 && pos.1 < bounds.1)
 }
 
-fn is_empty(blizzards: &HashSet<(i32, i32, Direction)>, pos: (i32, i32)) -> bool {
-    !(
-        blizzards.contains(&(pos.0, pos.1, Direction::Up))
+fn is_empty(blizzards: &Blizzard, pos: Position) -> bool {
+    !(blizzards.contains(&(pos.0, pos.1, Direction::Up))
         || blizzards.contains(&(pos.0, pos.1, Direction::Right))
         || blizzards.contains(&(pos.0, pos.1, Direction::Down))
-        || blizzards.contains(&(pos.0, pos.1, Direction::Left))
-    )
+        || blizzards.contains(&(pos.0, pos.1, Direction::Left)))
 }
 
-fn update_blizzards(
-    blizzards: &HashSet<(i32, i32, Direction)>,
-    bounds: &(i32, i32)
-) -> HashSet<(i32, i32, Direction)> {
+fn update_blizzards(blizzards: &Blizzard, bounds: &Position) -> Blizzard {
     let mut new_blizzards = HashSet::new();
     for blizz in blizzards {
         let new_blizzard = match blizz.2 {
@@ -91,29 +85,29 @@ fn update_blizzards(
                 } else {
                     (blizz.0 - 1, blizz.1, blizz.2)
                 }
-            },
+            }
             Direction::Down => {
                 if blizz.0 == bounds.0 - 1 {
                     (0, blizz.1, blizz.2)
                 } else {
                     (blizz.0 + 1, blizz.1, blizz.2)
                 }
-            },
+            }
             Direction::Left => {
                 if blizz.1 == 0 {
                     (blizz.0, bounds.1 - 1, blizz.2)
                 } else {
                     (blizz.0, blizz.1 - 1, blizz.2)
                 }
-            },
+            }
             Direction::Right => {
                 if blizz.1 == bounds.1 - 1 {
                     (blizz.0, 0, blizz.2)
                 } else {
                     (blizz.0, blizz.1 + 1, blizz.2)
                 }
-            },
-            _ => unreachable!()
+            }
+            _ => unreachable!(),
         };
         new_blizzards.insert(new_blizzard);
     }
@@ -121,7 +115,7 @@ fn update_blizzards(
     new_blizzards
 }
 
-fn get_blizzards_bounds(input: &str) -> (HashSet<(i32, i32, Direction)>, (i32, i32)) {
+fn get_blizzards_bounds(input: &str) -> (Blizzard, Position) {
     let mut blizzards = HashSet::new();
     let mut rows = 0;
     let mut cols = 0;
@@ -137,19 +131,19 @@ fn get_blizzards_bounds(input: &str) -> (HashSet<(i32, i32, Direction)>, (i32, i
             match c {
                 '#' => {
                     break;
-                },
+                }
                 '^' => {
                     blizzards.insert((rows, col_idx as i32, Direction::Up));
-                },
+                }
                 '>' => {
                     blizzards.insert((rows, col_idx as i32, Direction::Right));
-                },
+                }
                 'v' => {
                     blizzards.insert((rows, col_idx as i32, Direction::Down));
-                },
+                }
                 '<' => {
                     blizzards.insert((rows, col_idx as i32, Direction::Left));
-                },
+                }
                 _ => (),
             }
         }

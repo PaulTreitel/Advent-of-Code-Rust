@@ -17,11 +17,7 @@ fn part_one(input: &str) -> Option<u32> {
 fn parse_input(input: &str) -> Vec<u32> {
     input
         .split("\n\n")
-        .map(|x| x
-            .lines()
-            .map(|y| y.parse::<u32>().unwrap())
-            .sum()
-        )
+        .map(|x| x.lines().map(|y| y.parse::<u32>().unwrap()).sum())
         .collect()
 }
 

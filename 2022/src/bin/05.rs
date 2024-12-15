@@ -3,7 +3,7 @@ advent_of_code_2022::solution!(5);
 struct ProcedureStep {
     num_boxes: i32,
     start_stack: usize,
-    end_stack: usize
+    end_stack: usize,
 }
 
 pub fn part_one(input: &str) -> Option<String> {
@@ -39,11 +39,11 @@ fn get_steps(input: &str) -> Vec<ProcedureStep> {
     let mut steps: Vec<ProcedureStep> = Vec::new();
     for line in input.lines() {
         let line = line.split_whitespace();
-        let mut line_numbers =  line.filter_map(|s| s.parse::<i32>().ok());
+        let mut line_numbers = line.filter_map(|s| s.parse::<i32>().ok());
         let tmp = ProcedureStep {
             num_boxes: line_numbers.next().unwrap(),
             start_stack: line_numbers.next().unwrap() as usize - 1,
-            end_stack: line_numbers.next().unwrap() as usize - 1
+            end_stack: line_numbers.next().unwrap() as usize - 1,
         };
         steps.push(tmp);
     }
@@ -52,11 +52,7 @@ fn get_steps(input: &str) -> Vec<ProcedureStep> {
 
 fn get_stacks(input: &str) -> Vec<Vec<char>> {
     if input.len() < 100 {
-        vec![
-            vec!['Z', 'N'],
-            vec!['M', 'C', 'D'],
-            vec!['P']
-        ]
+        vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']]
     } else {
         vec![
             vec!['Q', 'S', 'W', 'C', 'Z', 'V', 'F', 'T'],
@@ -66,8 +62,8 @@ fn get_stacks(input: &str) -> Vec<Vec<char>> {
             vec!['J', 'G', 'L', 'D', 'B', 'S', 'T', 'P'],
             vec!['W', 'R', 'T', 'Z'],
             vec!['H', 'Q', 'M', 'N', 'S', 'F', 'R', 'J'],
-            vec!['R', 'N', 'F', 'H' ,'W'],
-            vec!['J', 'Z', 'T', 'Q', 'P', 'R', 'B']
+            vec!['R', 'N', 'F', 'H', 'W'],
+            vec!['J', 'Z', 'T', 'Q', 'P', 'R', 'B'],
         ]
     }
 }

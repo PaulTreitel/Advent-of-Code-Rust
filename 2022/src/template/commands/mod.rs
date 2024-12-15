@@ -1,13 +1,17 @@
-use std::{fs::{File, OpenOptions}, io::Write, path::PathBuf};
+use std::{
+    fs::{File, OpenOptions},
+    io::Write,
+    path::PathBuf,
+};
 
 pub mod all;
+pub mod attempt;
 pub mod download;
 pub mod read;
 pub mod scaffold;
+pub mod set_year;
 pub mod solve;
 pub mod time;
-pub mod set_year;
-pub mod attempt;
 
 #[derive(Debug)]
 enum WriteError {
@@ -16,10 +20,7 @@ enum WriteError {
 }
 
 fn open_file(filepath: &PathBuf) -> Result<File, std::io::Error> {
-    OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open(filepath)
+    OpenOptions::new().write(true).truncate(true).open(filepath)
 }
 
 fn write_file(filepath: &PathBuf, to_write: &[u8]) -> Result<(), WriteError> {
@@ -30,9 +31,7 @@ fn write_file(filepath: &PathBuf, to_write: &[u8]) -> Result<(), WriteError> {
     }
     let mut file = file.unwrap();
 
-    match file.write_all(
-        to_write
-    ) {
+    match file.write_all(to_write) {
         Ok(()) => Ok(()),
         Err(e) => {
             let filepath = filepath.to_str().unwrap();

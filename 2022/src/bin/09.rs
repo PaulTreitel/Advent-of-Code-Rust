@@ -2,6 +2,8 @@ use advent_of_code_2022::utils::direction::Direction;
 
 advent_of_code_2022::solution!(9);
 
+type Position = (i32, i32);
+
 struct Move {
     direction: Direction,
     num_steps: i32,
@@ -9,12 +11,12 @@ struct Move {
 
 pub fn part_one(input: &str) -> Option<i32> {
     let moves = get_move_list(input);
-    let mut current_position = vec![(0,0), (0,0)];
+    let mut current_position = vec![(0, 0), (0, 0)];
     run_moves(&mut current_position, moves)
 }
 
-fn run_moves(current_position: &mut Vec<(i32, i32)>, moves: Vec<Move>) -> Option<i32> {
-    let mut locations: Vec<(i32, i32)> = vec![(0, 0)];
+fn run_moves(current_position: &mut Vec<Position>, moves: Vec<Move>) -> Option<i32> {
+    let mut locations: Vec<Position> = vec![(0, 0)];
     for m in moves {
         let mut new_locations = get_locations_from_move(current_position, m);
         locations.append(&mut new_locations);
@@ -24,8 +26,8 @@ fn run_moves(current_position: &mut Vec<(i32, i32)>, moves: Vec<Move>) -> Option
     Some(locations.len() as i32)
 }
 
-fn get_locations_from_move(pos: &mut Vec<(i32, i32)>, m: Move) -> Vec<(i32, i32)> {
-    let mut result: Vec<(i32, i32)> = Vec::new();
+fn get_locations_from_move(pos: &mut Vec<Position>, m: Move) -> Vec<Position> {
+    let mut result: Vec<Position> = vec![];
     for _ in 0..m.num_steps {
         let dir = m.direction.to_offset();
         pos.get_mut(0).unwrap().0 += dir.0;
@@ -37,7 +39,7 @@ fn get_locations_from_move(pos: &mut Vec<(i32, i32)>, m: Move) -> Vec<(i32, i32)
     result
 }
 
-fn update_rope(pos: &mut Vec<(i32, i32)>) -> Option<(i32, i32)> {
+fn update_rope(pos: &mut Vec<Position>) -> Option<Position> {
     let tmp = pos.len();
     let mut head_knot = &mut pos.first().unwrap().clone();
     let mut count = 0;
@@ -56,7 +58,7 @@ fn update_rope(pos: &mut Vec<(i32, i32)>) -> Option<(i32, i32)> {
     None
 }
 
-fn update_knot(start: &(i32, i32), end: &mut (i32, i32)) -> Option<(i32, i32)> {
+fn update_knot(start: &Position, end: &mut Position) -> Option<Position> {
     let diffs = get_position_diff(*start, *end);
     if diffs.0.abs() <= 1 && diffs.1.abs() <= 1 {
         return None;
@@ -72,13 +74,13 @@ fn update_knot(start: &(i32, i32), end: &mut (i32, i32)) -> Option<(i32, i32)> {
     Some(*end)
 }
 
-fn get_position_diff(start: (i32, i32), end: (i32, i32)) -> (i32, i32) {
+fn get_position_diff(start: Position, end: Position) -> Position {
     ((start.0 - end.0), (start.1 - end.1))
 }
 
 pub fn part_two(input: &str) -> Option<i32> {
     let moves = get_move_list(input);
-    let mut current_position = vec![(0,0); 10];
+    let mut current_position = vec![(0, 0); 10];
     run_moves(&mut current_position, moves)
 }
 
@@ -88,7 +90,10 @@ fn get_move_list(input: &str) -> Vec<Move> {
         let mut line = line.split_ascii_whitespace();
         let dir = direction_from_letter(line.next().unwrap()).unwrap();
         let steps: i32 = line.next().unwrap().parse().unwrap();
-        let new_move = Move { direction: dir, num_steps: steps };
+        let new_move = Move {
+            direction: dir,
+            num_steps: steps,
+        };
         moves.push(new_move);
     }
     moves
@@ -99,11 +104,11 @@ fn direction_from_letter(letter: &str) -> Option<Direction> {
     if letter == 'R' {
         return Some(Direction::Right);
     } else if letter == 'U' {
-        return Some(Direction::Down)
+        return Some(Direction::Down);
     } else if letter == 'D' {
         return Some(Direction::Up);
     } else if letter == 'L' {
-        return Some(Direction::Left)
+        return Some(Direction::Left);
     }
     None
 }

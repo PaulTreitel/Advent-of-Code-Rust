@@ -20,7 +20,7 @@ fn vals_to_snafu(place_vals: &HashMap<u32, i8>) -> String {
     let mut places: Vec<u32> = place_vals.keys().copied().collect();
     places.sort();
     let max_place = places.pop().unwrap();
-    for p in (0..max_place+1).rev() {
+    for p in (0..max_place + 1).rev() {
         if place_vals.contains_key(&p) {
             chars.push(snafu_char_from_digit(*place_vals.get(&p).unwrap()));
         } else {
@@ -37,7 +37,6 @@ fn i64_to_snafu_place_values(n: i64) -> HashMap<u32, i8> {
         let new_place_val = get_next_place_value(diff);
         place_values.insert(new_place_val.0, new_place_val.1);
         diff -= new_place_val.1 as i64 * BASE.pow(new_place_val.0);
-        // println!("{:?}\n{}", place_values, diff);
     }
     place_values.insert(0, diff as i8);
     place_values
@@ -71,7 +70,7 @@ fn sum_snafus(snafus: &mut Vec<Vec<i8>>) -> i64 {
     for snafu in snafus {
         let mut val: i64 = 0;
         let len = snafu.len();
-        for power in  0..len as u32 {
+        for power in 0..len as u32 {
             val += snafu.pop().unwrap() as i64 * BASE.pow(power);
         }
         snafu_sum += val;
@@ -80,10 +79,9 @@ fn sum_snafus(snafus: &mut Vec<Vec<i8>>) -> i64 {
 }
 
 fn get_snafu_numbers(input: &str) -> Vec<Vec<i8>> {
-    input.lines()
-        .map(|x| {
-            x.chars().map(snafu_digit_from_char).collect::<Vec<i8>>()
-        })
+    input
+        .lines()
+        .map(|x| x.chars().map(snafu_digit_from_char).collect::<Vec<i8>>())
         .collect()
 }
 

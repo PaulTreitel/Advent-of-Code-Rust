@@ -32,7 +32,11 @@ pub fn part_one(input: &str) -> Option<i32> {
 fn get_signals(instructions: Vec<Instruction>) -> (Vec<i32>, Vec<Vec<char>>) {
     let mut signals: Vec<i32> = Vec::new();
     let crt: Vec<Vec<char>> = vec![vec!['.'; 40]; 6];
-    let mut comms = Communicator{ cycle: 0, x_reg: 1, crt };
+    let mut comms = Communicator {
+        cycle: 0,
+        x_reg: 1,
+        crt,
+    };
     for instr in instructions {
         if instr.name == NOOP {
             signals.push(cycle(&mut comms));
@@ -41,7 +45,7 @@ fn get_signals(instructions: Vec<Instruction>) -> (Vec<i32>, Vec<Vec<char>>) {
             signals.push(cycle(&mut comms));
             comms.x_reg += instr.value.unwrap();
         }
-    };
+    }
     (signals, comms.crt)
 }
 
@@ -51,7 +55,12 @@ fn cycle(comms: &mut Communicator) -> i32 {
     let crt_col = (comms.cycle - 1) % CRT_WIDTH;
     let reg_diff = comms.x_reg.abs_diff(crt_col);
     if reg_diff <= 1 {
-        *comms.crt.get_mut(crt_row as usize).unwrap().get_mut(crt_col as usize).unwrap() = '#';
+        *comms
+            .crt
+            .get_mut(crt_row as usize)
+            .unwrap()
+            .get_mut(crt_col as usize)
+            .unwrap() = '#';
     }
     comms.cycle * comms.x_reg
 }
@@ -60,7 +69,9 @@ pub fn part_two(input: &str) -> Option<i32> {
     let instructions = get_instructions(input);
     let (_, crt) = get_signals(instructions);
     for line in crt {
-        let x = line.iter().fold("".to_string(),|acc, e| acc + &e.to_string());
+        let x = line
+            .iter()
+            .fold("".to_string(), |acc, e| acc + &e.to_string());
         println!("{}", x);
     }
     None
@@ -70,13 +81,19 @@ fn get_instructions(input: &str) -> Vec<Instruction> {
     let mut instrs: Vec<Instruction> = Vec::new();
     for line in input.lines() {
         if line == NOOP {
-            instrs.push(Instruction{ name: NOOP.to_string(), value: None });
+            instrs.push(Instruction {
+                name: NOOP.to_string(),
+                value: None,
+            });
         } else {
             let mut line = line.split_ascii_whitespace();
             let cmd = line.next().unwrap();
             if cmd == ADDX {
                 let val: i32 = line.next().unwrap().parse().unwrap();
-                instrs.push(Instruction{ name: ADDX.to_string(), value: Some(val)});
+                instrs.push(Instruction {
+                    name: ADDX.to_string(),
+                    value: Some(val),
+                });
             }
         }
     }

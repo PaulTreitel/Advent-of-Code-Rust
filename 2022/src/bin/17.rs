@@ -14,18 +14,23 @@ enum RockType {
     Cross,
     L,
     Col,
-    Square
+    Square,
 }
 
 #[derive(Debug)]
 enum MoveType {
     Left,
-    Right
+    Right,
 }
 
-const ROCK_ORDER: [RockType; 5] = [RockType::Row, RockType::Cross, RockType::L, RockType::Col, RockType::Square];
+const ROCK_ORDER: [RockType; 5] = [
+    RockType::Row,
+    RockType::Cross,
+    RockType::L,
+    RockType::Col,
+    RockType::Square,
+];
 const PART_TWO_TARGET: i64 = 1_000_000_000_000;
-
 
 pub fn part_one(input: &str) -> Option<i32> {
     let moves = get_move_sequence(input);
@@ -57,7 +62,7 @@ pub fn part_two(input: &str) -> Option<i64> {
     let mut pattern_height_diff = 0;
     let mut base_iter = 0;
     let mut base_height = 0;
-    for i in 0..5*moves.len() as i64 {
+    for i in 0..5 * moves.len() as i64 {
         add_rock(i, &moves, &mut highest, &mut move_idx, &mut state);
         let curr_height = 1 + *highest.iter().max_by(|x, y| x.cmp(y)).unwrap();
         if heights.contains_key(&(move_idx, (i % 5) as i32)) {
@@ -83,23 +88,12 @@ pub fn part_two(input: &str) -> Option<i64> {
         add_rock(i, &moves, &mut highest.clone(), &mut move_idx, &mut state);
     }
     let final_height = *highest.iter().max_by(|x, y| x.cmp(y)).unwrap();
-    println!("base iteration {}, base height {}, {} iterations in pattern, pattern height {}, {} repeats, {} left, {} est",
-        base_iter,
-        base_height,
-        pattern_iters,
-        pattern_height_diff,
-        target / pattern_iters,
-        target % pattern_iters,
-        estimate);
-    println!("curr_height {}, final_height {}", curr_height, final_height);
     Some(estimate + (final_height - curr_height))
 }
 
 fn heights_match(current: &[i64; 7], old: &[i64; 7]) -> bool {
     let diffs: Vec<i64> = (0..7)
-        .map(|idx| {
-            current.get(idx).unwrap() - old.get(idx).unwrap()
-        })
+        .map(|idx| current.get(idx).unwrap() - old.get(idx).unwrap())
         .collect();
     let first = *diffs.first().unwrap();
     for d in diffs {
@@ -126,14 +120,16 @@ fn add_rock(
         let mut new_rock: HashSet<Point>;
         match *curr_move {
             MoveType::Left => {
-                new_rock = rock.iter()
+                new_rock = rock
+                    .iter()
                     .map(|p| Point { x: p.x - 1, y: p.y })
                     .filter(|p| p.x >= 0 && p.x < 7)
                     .collect();
             }
             MoveType::Right => {
-                new_rock = rock.iter()
-                    .map(|p| Point { x: p.x + 1, y: p.y})
+                new_rock = rock
+                    .iter()
+                    .map(|p| Point { x: p.x + 1, y: p.y })
                     .filter(|p| p.x >= 0 && p.x < 7)
                     .collect();
             }
@@ -142,9 +138,7 @@ fn add_rock(
         if new_rock.len() == rock.len() && intersect.is_empty() {
             rock = new_rock;
         }
-        new_rock = rock.iter()
-            .map(|p| Point { x: p.x, y: p.y - 1 })
-            .collect();
+        new_rock = rock.iter().map(|p| Point { x: p.x, y: p.y - 1 }).collect();
         let intersect: HashSet<&Point> = state.intersection(&new_rock).collect();
         if intersect.is_empty() {
             rock = new_rock;
@@ -162,47 +156,74 @@ fn add_rock(
 
 fn new_rock(bottom_pos: i64, rock: &RockType) -> HashSet<Point> {
     match *rock {
-        RockType::Row => {
-            HashSet::from_iter((2..6).map(|x| Point { x, y: bottom_pos }))
-        },
-        RockType::Col => {
-            HashSet::from_iter((0..4).map(|ymod| Point { x: 2, y: bottom_pos + ymod}))
-        },
+        RockType::Row => HashSet::from_iter((2..6).map(|x| Point { x, y: bottom_pos })),
+        RockType::Col => HashSet::from_iter((0..4).map(|ymod| Point {
+            x: 2,
+            y: bottom_pos + ymod,
+        })),
         RockType::L => {
-            let mut new_rock = HashSet::from_iter(
-                (2..5).map(|x| Point { x, y: bottom_pos })
-            );
-            new_rock.insert(Point { x: 4, y: bottom_pos + 1 });
-            new_rock.insert(Point { x: 4, y: bottom_pos + 2 });
+            let mut new_rock = HashSet::from_iter((2..5).map(|x| Point { x, y: bottom_pos }));
+            new_rock.insert(Point {
+                x: 4,
+                y: bottom_pos + 1,
+            });
+            new_rock.insert(Point {
+                x: 4,
+                y: bottom_pos + 2,
+            });
             new_rock
-        },
-        RockType::Cross => {
-            HashSet::from_iter(vec![
-                Point { x: 3, y: bottom_pos },
-                Point { x: 3, y: bottom_pos + 1 },
-                Point { x: 3, y: bottom_pos + 2 },
-                Point { x: 4, y: bottom_pos + 1 },
-                Point { x: 2, y: bottom_pos + 1 },
-            ])
-        },
-        RockType::Square => {
-            HashSet::from_iter(vec![
-                Point { x: 2, y: bottom_pos },
-                Point { x: 3, y: bottom_pos },
-                Point { x: 2, y: bottom_pos + 1 },
-                Point { x: 3, y: bottom_pos + 1 }
-            ])
-        },
+        }
+        RockType::Cross => HashSet::from_iter(vec![
+            Point {
+                x: 3,
+                y: bottom_pos,
+            },
+            Point {
+                x: 3,
+                y: bottom_pos + 1,
+            },
+            Point {
+                x: 3,
+                y: bottom_pos + 2,
+            },
+            Point {
+                x: 4,
+                y: bottom_pos + 1,
+            },
+            Point {
+                x: 2,
+                y: bottom_pos + 1,
+            },
+        ]),
+        RockType::Square => HashSet::from_iter(vec![
+            Point {
+                x: 2,
+                y: bottom_pos,
+            },
+            Point {
+                x: 3,
+                y: bottom_pos,
+            },
+            Point {
+                x: 2,
+                y: bottom_pos + 1,
+            },
+            Point {
+                x: 3,
+                y: bottom_pos + 1,
+            },
+        ]),
     }
 }
 
 fn get_move_sequence(input: &str) -> Vec<MoveType> {
     input
+        .trim()
         .chars()
         .map(|c| match c {
             '<' => MoveType::Left,
             '>' => MoveType::Right,
-            _ => unreachable!()
+            _ => unreachable!("move sequence: {} is not a move character!", c),
         })
         .collect()
 }

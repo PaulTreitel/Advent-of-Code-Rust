@@ -1,6 +1,9 @@
 advent_of_code_2022::solution!(7);
 
-use std::{collections::HashMap, path::{Path, PathBuf}};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 const DIRSIZE_FILTER: i32 = 100000;
 const DISKSPACE: i32 = 70000000;
@@ -53,21 +56,32 @@ fn add_sizes(fs_contents: &mut HashMap<String, Directory>, path: &Path, size: i3
 }
 
 fn handle_dir(fs_contents: &mut HashMap<String, Directory>, curr_path: &Path, name: &String) {
-    let new_subdir = Directory{ size: 0, child_dirs: Vec::new() };
-    fs_contents.get_mut(&curr_path.to_str().unwrap().to_string())
+    let new_subdir = Directory {
+        size: 0,
+        child_dirs: Vec::new(),
+    };
+    fs_contents
+        .get_mut(&curr_path.to_str().unwrap().to_string())
         .unwrap()
         .child_dirs
-            .push(name.to_string());
+        .push(name.to_string());
     fs_contents.entry(name.to_string()).or_insert(new_subdir);
 }
 
-fn handle_cd(fs_contents: &mut HashMap<String, Directory>, curr_path: &mut PathBuf, path_change: &str) {
+fn handle_cd(
+    fs_contents: &mut HashMap<String, Directory>,
+    curr_path: &mut PathBuf,
+    path_change: &str,
+) {
     if path_change.eq("..") {
         curr_path.pop();
     } else {
         curr_path.push(path_change);
         let new_path = curr_path.to_str().unwrap().to_string();
-        fs_contents.entry(new_path).or_insert(Directory { size: 0, child_dirs: Vec::new() });
+        fs_contents.entry(new_path).or_insert(Directory {
+            size: 0,
+            child_dirs: Vec::new(),
+        });
     }
 }
 

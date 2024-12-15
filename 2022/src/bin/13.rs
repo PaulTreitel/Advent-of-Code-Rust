@@ -2,7 +2,6 @@ advent_of_code_2022::solution!(13);
 
 use std::cmp::Ordering;
 
-
 enum Packet {
     List(Vec<Packet>),
     Number(i32),
@@ -22,17 +21,15 @@ pub fn part_one(input: &str) -> Option<i32> {
 
 fn packets_in_order(left: &Packet, right: &Packet) -> Ordering {
     match (left, right) {
-        (Packet::Number(lnum), Packet::Number(rnum)) => {
-            lnum.cmp(rnum)
-        },
+        (Packet::Number(lnum), Packet::Number(rnum)) => lnum.cmp(rnum),
         (Packet::List(_), Packet::Number(rnum)) => {
             let rlist = Packet::List(vec![Packet::Number(*rnum)]);
             packets_in_order(left, &rlist)
-        },
+        }
         (Packet::Number(lnum), Packet::List(_)) => {
             let llist = Packet::List(vec![Packet::Number(*lnum)]);
             packets_in_order(&llist, right)
-        },
+        }
         (Packet::List(llist), Packet::List(rlist)) => {
             for (l_packet, r_packet) in llist.iter().zip(rlist.iter()) {
                 let cmp = packets_in_order(l_packet, r_packet);
@@ -41,7 +38,7 @@ fn packets_in_order(left: &Packet, right: &Packet) -> Ordering {
                 }
             }
             llist.len().cmp(&rlist.len())
-        },
+        }
     }
 }
 
@@ -59,9 +56,9 @@ pub fn part_two(input: &str) -> Option<i32> {
     packets.sort_by(|l: &&Packet, r: &&Packet| packets_in_order(l, r));
     let mut res = 1;
     for (index, p) in packets.iter().enumerate() {
-        if let Packet::List(a) =  *p {
-            if let Some(Packet::List(b)) =  a.first() {
-                if let Some(Packet::Number(c)) =  b.first() {
+        if let Packet::List(a) = *p {
+            if let Some(Packet::List(b)) = a.first() {
+                if let Some(Packet::Number(c)) = b.first() {
                     if (*c == 2 || *c == 6) && a.len() == 1 && b.len() == 1 {
                         res *= (index + 1) as i32;
                     }

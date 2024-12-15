@@ -9,8 +9,10 @@ const DIRECTION_ORDER: [MapDirection; 4] = [
     MapDirection::North,
     MapDirection::South,
     MapDirection::West,
-    MapDirection::East
+    MapDirection::East,
 ];
+
+type Position = (i32, i32);
 
 pub fn part_one(input: &str) -> Option<i32> {
     let mut dir_order = DIRECTION_ORDER.clone().to_vec();
@@ -43,7 +45,7 @@ pub fn part_two(input: &str) -> Option<i32> {
     Some(num_rounds)
 }
 
-fn get_corners(elves: &HashSet<(i32, i32)>) -> ((i32, i32), (i32, i32)) {
+fn get_corners(elves: &HashSet<Position>) -> (Position, Position) {
     let mut smallest = (i32::MAX, i32::MAX);
     let mut greatest = (i32::MIN, i32::MIN);
 
@@ -64,7 +66,7 @@ fn get_corners(elves: &HashSet<(i32, i32)>) -> ((i32, i32), (i32, i32)) {
     (smallest, greatest)
 }
 
-fn make_moves(moves: &HashMap<(i32, i32), Vec<(i32, i32)>>, elves: &mut HashSet<(i32, i32)>) -> i32 {
+fn make_moves(moves: &HashMap<Position, Vec<Position>>, elves: &mut HashSet<Position>) -> i32 {
     let mut moves_made = 0;
     for mv in moves {
         if mv.1.len() > 1 {
@@ -79,9 +81,9 @@ fn make_moves(moves: &HashMap<(i32, i32), Vec<(i32, i32)>>, elves: &mut HashSet<
 
 fn get_moves(
     dir_order: &Vec<MapDirection>,
-    elves: &HashSet<(i32, i32)>
-) -> HashMap<(i32, i32), Vec<(i32, i32)>> {
-    let mut moves: HashMap<(i32, i32), Vec<(i32, i32)>> = HashMap::new();
+    elves: &HashSet<Position>,
+) -> HashMap<Position, Vec<Position>> {
+    let mut moves: HashMap<Position, Vec<Position>> = HashMap::new();
     for elf in elves {
         if !should_move(elves, elf) {
             continue;
@@ -110,10 +112,7 @@ fn get_moves(
     moves
 }
 
-fn propose_check_cells(
-    dir: &MapDirection,
-    elf: &(i32, i32)
-) -> ((i32, i32), Vec<(i32, i32)>) {
+fn propose_check_cells(dir: &MapDirection, elf: &Position) -> (Position, Vec<Position>) {
     let check_cells;
     let proposed_cell;
     match dir {
@@ -121,46 +120,44 @@ fn propose_check_cells(
             check_cells = vec![
                 (elf.0 - 1, elf.1 - 1),
                 (elf.0 - 1, elf.1),
-                (elf.0 - 1, elf.1 + 1)
+                (elf.0 - 1, elf.1 + 1),
             ];
             proposed_cell = (elf.0 - 1, elf.1);
-        },
+        }
         MapDirection::South => {
             check_cells = vec![
                 (elf.0 + 1, elf.1 - 1),
                 (elf.0 + 1, elf.1),
-                (elf.0 + 1, elf.1 + 1)
+                (elf.0 + 1, elf.1 + 1),
             ];
             proposed_cell = (elf.0 + 1, elf.1);
-        },
+        }
         MapDirection::West => {
             check_cells = vec![
                 (elf.0 - 1, elf.1 - 1),
                 (elf.0, elf.1 - 1),
-                (elf.0 + 1, elf.1 - 1)
+                (elf.0 + 1, elf.1 - 1),
             ];
             proposed_cell = (elf.0, elf.1 - 1);
-        },
+        }
         MapDirection::East => {
             check_cells = vec![
                 (elf.0 - 1, elf.1 + 1),
                 (elf.0, elf.1 + 1),
-                (elf.0 + 1, elf.1 + 1)
+                (elf.0 + 1, elf.1 + 1),
             ];
             proposed_cell = (elf.0, elf.1 + 1);
-        },
-        _ => unreachable!()
+        }
+        _ => unreachable!(),
     };
     (proposed_cell, check_cells)
 }
 
-fn should_move(elves: &HashSet<(i32, i32)>, elf: &(i32, i32)) -> bool {
+fn should_move(elves: &HashSet<Position>, elf: &Position) -> bool {
     let mut should_move = false;
     for rmod in [-1, 0, 1] {
         for cmod in [-1, 0, 1] {
-            if (rmod != 0 || cmod != 0)
-                && elves.contains(&(elf.0 + rmod, elf.1 + cmod)
-            ) {
+            if (rmod != 0 || cmod != 0) && elves.contains(&(elf.0 + rmod, elf.1 + cmod)) {
                 should_move = true;
                 break;
             }
@@ -169,7 +166,7 @@ fn should_move(elves: &HashSet<(i32, i32)>, elf: &(i32, i32)) -> bool {
     should_move
 }
 
-fn get_elves(input: &str) -> HashSet<(i32, i32)> {
+fn get_elves(input: &str) -> HashSet<Position> {
     let mut elves = HashSet::new();
     for (row, line) in input.lines().enumerate() {
         for (col, ch) in line.chars().enumerate() {

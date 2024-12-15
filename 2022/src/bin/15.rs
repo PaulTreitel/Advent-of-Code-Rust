@@ -44,7 +44,7 @@ pub fn part_two(input: &str) -> Option<u64> {
             None => (),
             Some(x) => {
                 return Some((x as u64) * TUNING_CONST + (row_idx as u64));
-            },
+            }
         }
     }
     None
@@ -77,8 +77,9 @@ fn check_row(sensors: &Vec<(Sensor, i32)>, max_coord: i32, row: i32) -> Option<i
     bad_ranges.reverse();
     for idx in (0..bad_ranges.len()).rev() {
         let item = bad_ranges.get(idx).unwrap();
-        if (item.0 >= total_range.0 && item.0 <= total_range.1) ||
-        (item.1 >= total_range.0 && item.1 <= total_range.1) {
+        if (item.0 >= total_range.0 && item.0 <= total_range.1)
+            || (item.1 >= total_range.0 && item.1 <= total_range.1)
+        {
             total_range = (total_range.0.min(item.0), total_range.1.max(item.1));
             bad_ranges.remove(idx);
         }
@@ -151,33 +152,276 @@ fn input_to_sensor_ranges(input: Vec<(Sensor, Beacon)>) -> (Vec<(Sensor, i32)>, 
 fn parse_input(is_real: bool) -> Vec<(Sensor, Beacon)> {
     if is_real {
         vec![
-            (Sensor { x: 1326566, y: 3575946 }, Beacon { x: 1374835, y: 2000000 }),
-            (Sensor { x: 2681168, y: 3951549 }, Beacon { x: 3184941, y: 3924923 }),
-            (Sensor { x: 3959984, y: 1095746 }, Beacon { x: 3621412, y: 2239432 }),
-            (Sensor { x: 3150886, y: 2479946 }, Beacon { x: 3621412, y: 2239432 }),
-            (Sensor { x: 3983027, y: 2972336 }, Beacon { x: 4012908, y: 3083616 }),
-            (Sensor { x: 3371601, y: 3853300 }, Beacon { x: 3184941, y: 3924923 }),
-            (Sensor { x: 3174612, y: 3992719 }, Beacon { x: 3184941, y: 3924923 }),
-            (Sensor { x: 3316368, y: 1503688 }, Beacon { x: 3621412, y: 2239432 }),
-            (Sensor { x: 3818181, y: 2331216 }, Beacon { x: 3621412, y: 2239432 }),
-            (Sensor { x: 3960526, y: 3229321 }, Beacon { x: 4012908, y: 3083616 }),
-            (Sensor { x: 61030, y: 3045273 }, Beacon { x: -467419, y: 2369316 }),
-            (Sensor { x: 3635583, y: 3121524 }, Beacon { x: 4012908, y: 3083616 }),
-            (Sensor { x: 2813357, y: 5535 }, Beacon { x: 3595763, y: -77322 }),
-            (Sensor { x: 382745, y: 1566522 }, Beacon { x: 1374835, y: 2000000 }),
-            (Sensor { x: 3585664, y: 538632 }, Beacon { x: 3595763, y: -77322 }),
-            (Sensor { x: 3979654, y: 2158646 }, Beacon { x: 3621412, y: 2239432 }),
-            (Sensor { x: 3996588, y: 2833167 }, Beacon { x: 4012908, y: 3083616 }),
-            (Sensor { x: 3249383, y: 141800 }, Beacon { x: 3595763, y: -77322 }),
-            (Sensor { x: 3847114, y: 225529 }, Beacon { x: 3595763, y: -77322 }),
-            (Sensor { x: 3668737, y: 3720078 }, Beacon { x: 3184941, y: 3924923 }),
-            (Sensor { x: 1761961, y: 680560 }, Beacon { x: 1374835, y: 2000000 }),
-            (Sensor { x: 2556636, y: 2213691 }, Beacon { x: 3621412, y: 2239432 }),
-            (Sensor { x: 65365, y: 215977 }, Beacon { x: 346716, y: -573228 }),
-            (Sensor { x: 709928, y: 2270200 }, Beacon { x: 1374835, y: 2000000 }),
-            (Sensor { x: 3673956, y: 2670437 }, Beacon { x: 4029651, y: 2547743 }),
-            (Sensor { x: 3250958, y: 3999227 }, Beacon { x: 3184941, y: 3924923 }),
-            (Sensor { x: 3009537, y: 3292368 }, Beacon { x: 3184941, y: 3924923 }),
+            (
+                Sensor {
+                    x: 1326566,
+                    y: 3575946,
+                },
+                Beacon {
+                    x: 1374835,
+                    y: 2000000,
+                },
+            ),
+            (
+                Sensor {
+                    x: 2681168,
+                    y: 3951549,
+                },
+                Beacon {
+                    x: 3184941,
+                    y: 3924923,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3959984,
+                    y: 1095746,
+                },
+                Beacon {
+                    x: 3621412,
+                    y: 2239432,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3150886,
+                    y: 2479946,
+                },
+                Beacon {
+                    x: 3621412,
+                    y: 2239432,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3983027,
+                    y: 2972336,
+                },
+                Beacon {
+                    x: 4012908,
+                    y: 3083616,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3371601,
+                    y: 3853300,
+                },
+                Beacon {
+                    x: 3184941,
+                    y: 3924923,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3174612,
+                    y: 3992719,
+                },
+                Beacon {
+                    x: 3184941,
+                    y: 3924923,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3316368,
+                    y: 1503688,
+                },
+                Beacon {
+                    x: 3621412,
+                    y: 2239432,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3818181,
+                    y: 2331216,
+                },
+                Beacon {
+                    x: 3621412,
+                    y: 2239432,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3960526,
+                    y: 3229321,
+                },
+                Beacon {
+                    x: 4012908,
+                    y: 3083616,
+                },
+            ),
+            (
+                Sensor {
+                    x: 61030,
+                    y: 3045273,
+                },
+                Beacon {
+                    x: -467419,
+                    y: 2369316,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3635583,
+                    y: 3121524,
+                },
+                Beacon {
+                    x: 4012908,
+                    y: 3083616,
+                },
+            ),
+            (
+                Sensor {
+                    x: 2813357,
+                    y: 5535,
+                },
+                Beacon {
+                    x: 3595763,
+                    y: -77322,
+                },
+            ),
+            (
+                Sensor {
+                    x: 382745,
+                    y: 1566522,
+                },
+                Beacon {
+                    x: 1374835,
+                    y: 2000000,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3585664,
+                    y: 538632,
+                },
+                Beacon {
+                    x: 3595763,
+                    y: -77322,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3979654,
+                    y: 2158646,
+                },
+                Beacon {
+                    x: 3621412,
+                    y: 2239432,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3996588,
+                    y: 2833167,
+                },
+                Beacon {
+                    x: 4012908,
+                    y: 3083616,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3249383,
+                    y: 141800,
+                },
+                Beacon {
+                    x: 3595763,
+                    y: -77322,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3847114,
+                    y: 225529,
+                },
+                Beacon {
+                    x: 3595763,
+                    y: -77322,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3668737,
+                    y: 3720078,
+                },
+                Beacon {
+                    x: 3184941,
+                    y: 3924923,
+                },
+            ),
+            (
+                Sensor {
+                    x: 1761961,
+                    y: 680560,
+                },
+                Beacon {
+                    x: 1374835,
+                    y: 2000000,
+                },
+            ),
+            (
+                Sensor {
+                    x: 2556636,
+                    y: 2213691,
+                },
+                Beacon {
+                    x: 3621412,
+                    y: 2239432,
+                },
+            ),
+            (
+                Sensor {
+                    x: 65365,
+                    y: 215977,
+                },
+                Beacon {
+                    x: 346716,
+                    y: -573228,
+                },
+            ),
+            (
+                Sensor {
+                    x: 709928,
+                    y: 2270200,
+                },
+                Beacon {
+                    x: 1374835,
+                    y: 2000000,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3673956,
+                    y: 2670437,
+                },
+                Beacon {
+                    x: 4029651,
+                    y: 2547743,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3250958,
+                    y: 3999227,
+                },
+                Beacon {
+                    x: 3184941,
+                    y: 3924923,
+                },
+            ),
+            (
+                Sensor {
+                    x: 3009537,
+                    y: 3292368,
+                },
+                Beacon {
+                    x: 3184941,
+                    y: 3924923,
+                },
+            ),
         ]
     } else {
         vec![

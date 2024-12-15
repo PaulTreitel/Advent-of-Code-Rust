@@ -11,13 +11,13 @@ const DRAW_SCORE: i32 = 3;
 enum RpsResult {
     Win,
     Draw,
-    Lose
+    Lose,
 }
 
 enum Move {
     Rock,
     Paper,
-    Scissors
+    Scissors,
 }
 
 fn get_round_points(my_move: &Move, their_move: &Move) -> Option<i32> {
@@ -48,7 +48,7 @@ fn char_to_move(ch: char) -> Option<Move> {
         'X' => Some(Move::Rock),
         'Y' => Some(Move::Paper),
         'Z' => Some(Move::Scissors),
-        _ => None
+        _ => None,
     }
 }
 
@@ -57,7 +57,7 @@ fn char_to_result(ch: char) -> Option<RpsResult> {
         'X' => Some(RpsResult::Lose),
         'Y' => Some(RpsResult::Draw),
         'Z' => Some(RpsResult::Win),
-        _ => None
+        _ => None,
     }
 }
 
@@ -66,18 +66,18 @@ fn get_move(their_move: &Move, outcome: RpsResult) -> Move {
         Move::Rock => match outcome {
             RpsResult::Win => Move::Paper,
             RpsResult::Draw => Move::Rock,
-            RpsResult::Lose => Move::Scissors
-        }
+            RpsResult::Lose => Move::Scissors,
+        },
         Move::Paper => match outcome {
             RpsResult::Win => Move::Scissors,
             RpsResult::Draw => Move::Paper,
-            RpsResult::Lose => Move::Rock
-        }
+            RpsResult::Lose => Move::Rock,
+        },
         Move::Scissors => match outcome {
             RpsResult::Win => Move::Rock,
             RpsResult::Draw => Move::Scissors,
-            RpsResult::Lose => Move::Paper
-        }
+            RpsResult::Lose => Move::Paper,
+        },
     }
 }
 

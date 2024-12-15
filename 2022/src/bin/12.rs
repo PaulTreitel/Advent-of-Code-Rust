@@ -14,18 +14,31 @@ fn bfs_map(map: Vec<Vec<i32>>, queue: &mut Vec<(i32, (i32, i32))>) -> i32 {
     let mut visited: Vec<(i32, i32)> = Vec::new();
     let rows = map.len();
     let cols = map.first().unwrap().len();
-    while  !queue.is_empty() {
+    while !queue.is_empty() {
         let (moves, pos) = queue.remove(0);
         if visited.contains(&pos) {
             continue;
         }
         visited.push(pos);
-        let start_elevation = map.get(pos.0 as usize).unwrap().get(pos.1 as usize).unwrap();
-        for (newrow, newcol) in [(pos.0 + 1, pos.1), (pos.0 - 1, pos.1), (pos.0, pos.1 + 1), (pos.0, pos.1 - 1)] {
+        let start_elevation = map
+            .get(pos.0 as usize)
+            .unwrap()
+            .get(pos.1 as usize)
+            .unwrap();
+        for (newrow, newcol) in [
+            (pos.0 + 1, pos.1),
+            (pos.0 - 1, pos.1),
+            (pos.0, pos.1 + 1),
+            (pos.0, pos.1 - 1),
+        ] {
             if (newrow < 0 || newrow >= rows as i32) || (newcol < 0 || newcol >= cols as i32) {
                 continue;
             }
-            let new_elevation = map.get(newrow as usize).unwrap().get(newcol as usize).unwrap();
+            let new_elevation = map
+                .get(newrow as usize)
+                .unwrap()
+                .get(newcol as usize)
+                .unwrap();
             if valid_step(*start_elevation, *new_elevation) {
                 if *new_elevation == 26 {
                     return moves + 1;

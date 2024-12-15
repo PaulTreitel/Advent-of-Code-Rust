@@ -2,7 +2,6 @@ advent_of_code_2022::solution!(19);
 
 use std::cmp::max;
 
-
 #[derive(Debug)]
 struct Blueprint {
     id: i32,
@@ -67,27 +66,25 @@ pub fn part_two(input: &str) -> Option<i32> {
     Some(geode_product)
 }
 
-fn add_new_states(
-    states: &mut Vec<State>,
-    bprint: &Blueprint,
-    curr_state: &State,
-) {
+fn add_new_states(states: &mut Vec<State>, bprint: &Blueprint, curr_state: &State) {
     let purchaseable = get_purchaseable(bprint, curr_state);
     let max_ore_cost = *[
         bprint.ore_bot,
         bprint.clay_bot,
         bprint.obsidian_bot.0,
-        bprint.geode_bot.0
+        bprint.geode_bot.0,
     ]
-        .iter().max().unwrap();
+    .iter()
+    .max()
+    .unwrap();
     let need_more_ore_bots = curr_state.ore_bots < max_ore_cost;
     let need_more_clay_bots = curr_state.clay_bots < bprint.obsidian_bot.1;
     let need_more_obsidian_bots = curr_state.obsidian_bots < bprint.geode_bot.1;
 
     let couldnt_buy_ore_bot_later = curr_state.ore < curr_state.ore_bots + bprint.ore_bot;
     let couldnt_buy_clay_bot_later = curr_state.ore < curr_state.ore_bots + bprint.clay_bot;
-    let couldnt_buy_obsidian_bot_later =
-        curr_state.ore < curr_state.ore_bots + bprint.obsidian_bot.0
+    let couldnt_buy_obsidian_bot_later = curr_state.ore
+        < curr_state.ore_bots + bprint.obsidian_bot.0
         || curr_state.clay < curr_state.clay_bots + bprint.obsidian_bot.1;
 
     if purchaseable.0 && need_more_ore_bots && couldnt_buy_ore_bot_later {
@@ -160,9 +157,7 @@ fn start_state(mins_left: i32) -> State {
 fn get_blueprints(input: &str) -> Vec<Blueprint> {
     let mut prints = Vec::new();
     for line in input.lines() {
-        let mut line = line
-            .split(",")
-            .map(|s| s.parse::<i32>().unwrap());
+        let mut line = line.split(",").map(|s| s.parse::<i32>().unwrap());
         let id = line.next().unwrap();
         let ore_bot_ore = line.next().unwrap();
         let clay_bot_ore = line.next().unwrap();

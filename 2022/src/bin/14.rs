@@ -35,7 +35,6 @@ fn add_floor(grid: &mut [Vec<Space>]) {
     for row_index in (0..grid.len()).rev() {
         for space in grid.get(row_index).unwrap() {
             if let Space::Rock = space {
-
                 end_rock_row = row_index;
                 break;
             }
@@ -53,13 +52,10 @@ fn add_floor(grid: &mut [Vec<Space>]) {
 fn run_sand(grid: &mut [Vec<Space>]) -> i32 {
     let mut pos = (0, 500);
     loop {
-
         if let Space::Sand = grid.get(pos.0).unwrap().get(pos.1).unwrap() {
             return 1;
         };
-        if pos.0 == grid.len() - 1 || (pos.1 as i32) < 0
-            || pos.1 >= grid.first().unwrap().len()
-        {
+        if pos.0 == grid.len() - 1 || (pos.1 as i32) < 0 || pos.1 >= grid.first().unwrap().len() {
             return 1;
         }
         let row_above = grid.get_mut(pos.0 + 1).unwrap();
@@ -80,7 +76,7 @@ fn run_sand(grid: &mut [Vec<Space>]) -> i32 {
             _ => {
                 *grid.get_mut(pos.0).unwrap().get_mut(pos.1).unwrap() = Space::Sand;
                 return 0;
-            },
+            }
         };
     }
 }
@@ -92,7 +88,7 @@ fn get_paths(input: &str) -> Vec<Vec<(i32, i32)>> {
         |pt| {
             let tmp: Vec<i32> = pt.split(",").map(|s| s.parse::<i32>().unwrap()).collect();
             (*tmp.get(1).unwrap(), *tmp.first().unwrap())
-        }
+        },
     );
     paths
 }
@@ -105,11 +101,19 @@ fn construct_matrix(rock_paths: &[Vec<(i32, i32)>]) -> Vec<Vec<Space>> {
             let end = *path.get(index + 1).unwrap();
             let dir = ((end.0 - start.0).signum(), (end.1 - start.1).signum());
             while start != end {
-                let tmp = matrix.get_mut(start.0 as usize).unwrap().get_mut(start.1 as usize).unwrap();
+                let tmp = matrix
+                    .get_mut(start.0 as usize)
+                    .unwrap()
+                    .get_mut(start.1 as usize)
+                    .unwrap();
                 *tmp = Space::Rock;
                 start = (start.0 + dir.0, start.1 + dir.1);
             }
-            *matrix.get_mut(start.0 as usize).unwrap().get_mut(start.1 as usize).unwrap() = Space::Rock;
+            *matrix
+                .get_mut(start.0 as usize)
+                .unwrap()
+                .get_mut(start.1 as usize)
+                .unwrap() = Space::Rock;
         }
     }
     matrix

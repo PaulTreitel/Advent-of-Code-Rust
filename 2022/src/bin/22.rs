@@ -1,29 +1,34 @@
 advent_of_code_2022::solution!(22);
 
-use std::{cmp::max, collections::{HashMap, HashSet}, fmt::Display};
+use std::{
+    cmp::max,
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
 use advent_of_code_2022::utils::direction::Direction;
 
-type Part2Edge = (i32, i32, Option<(Direction, Direction)>);
+type Position = (i32, i32);
+type Part2Edge = (Position, Option<(Direction, Direction)>);
 
 struct ContextPart1 {
-    edges: HashMap<(i32, i32), HashSet<(i32, i32)>>,
-    start: (i32, i32),
+    edges: HashMap<Position, HashSet<Position>>,
+    start: Position,
     moves: Vec<i32>,
     turns: Vec<char>,
 }
 
 struct ContextPart2 {
-    edges: HashMap<(i32, i32), HashSet<Part2Edge>>,
-    start: (i32, i32),
+    edges: HashMap<Position, HashSet<Part2Edge>>,
+    start: Position,
     moves: Vec<i32>,
     turns: Vec<char>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct Face {
-    top_left: (i32, i32),
-    bottom_right: (i32, i32)
+    top_left: Position,
+    bottom_right: Position,
 }
 
 impl Display for Face {
@@ -33,12 +38,12 @@ impl Display for Face {
 }
 
 impl Face {
-    pub fn get_corners(&self) -> Vec<(i32, i32)> {
+    pub fn get_corners(&self) -> Vec<Position> {
         vec![
             self.top_left,
             self.bottom_right,
             (self.top_left.0, self.bottom_right.1),
-            (self.bottom_right.0, self.top_left.1)
+            (self.bottom_right.0, self.top_left.1),
         ]
     }
 
@@ -104,57 +109,58 @@ pub fn part_two(input: &str) -> Option<i32> {
     let ctx = get_graph_part2(input);
     let mut curr_pos = ctx.start;
     let mut curr_dir = Direction::Right;
-    println!("now at {:?}, facing {:?}", curr_pos, curr_dir);
+    // println!("now at {:?}, facing {:?}", curr_pos, curr_dir);
 
     for i in 0..ctx.moves.len() {
-        make_move_part2(&ctx, &mut curr_pos, &mut curr_dir, ctx.moves.get(i).unwrap());
+        make_move_part2(
+            &ctx,
+            &mut curr_pos,
+            &mut curr_dir,
+            ctx.moves.get(i).unwrap(),
+        );
         if i < ctx.turns.len() {
             new_direction(&mut curr_dir, *ctx.turns.get(i).unwrap());
         }
-        println!("now at {:?}, facing {:?}", curr_pos, curr_dir);
+        // println!("now at {:?}, facing {:?}", curr_pos, curr_dir);
     }
     Some((curr_pos.0 + 1) * 1000 + (curr_pos.1 + 1) * 4 + get_dir_val(&curr_dir))
     // None
 }
 
-fn make_move_part2(
-    ctx: &ContextPart2,
-    pos: &mut (i32, i32),
-    dir: &mut Direction,
-    mv: &i32
-) {
-    println!("sitting at {:?} facing {:?}, moving {} tiles", pos, dir, mv);
+fn make_move_part2(ctx: &ContextPart2, pos: &mut Position, dir: &mut Direction, mv: &i32) {
+    // println!("sitting at {:?} facing {:?}, moving {} tiles", pos, dir, mv);
     for _ in 0..*mv {
         let neighbors = ctx.edges.get(pos).unwrap();
-        for (r, c, side_dir) in neighbors {
+        for ((r, c), side_dir) in neighbors {
             match side_dir {
                 Some((appear_dir, move_dir)) => {
                     if move_dir == dir {
-                        println!("wrapping from {:?} to ({},{}), now facing {:?} after moving {:?}",
-                            pos, r, c, appear_dir, move_dir
-                        );
+                        // println!(
+                        //     "wrapping from {:?} to ({},{}), now facing {:?} after moving {:?}",
+                        //     pos, r, c, appear_dir, move_dir
+                        // );
                         *pos = (*r, *c);
                         *dir = *appear_dir;
                         break;
                     }
-                },
+                }
                 None => {
                     if make_normal_move(r, c, pos, dir) {
                         break;
                     }
-                },
+                }
             }
         }
     }
 }
 
-fn make_normal_move(r: &i32, c: &i32, pos: &mut (i32, i32), dir: &Direction) -> bool {
+fn make_normal_move(r: &i32, c: &i32, pos: &mut Position, dir: &Direction) -> bool {
     let did_match = match *dir {
         Direction::Left => *r == pos.0 && (*c == pos.1 - 1 || *c > pos.1 + 1),
         Direction::Right => *r == pos.0 && (*c == pos.1 + 1 || *c < pos.1 - 1),
         Direction::Up => (*r == pos.0 - 1 || *r > pos.0 + 1) && *c == pos.1,
         Direction::Down => (*r == pos.0 + 1 || *r < pos.0 - 1) && *c == pos.1,
-        _ => unreachable!()
+        _ => unreachable!(),
     };
     if did_match {
         *pos = (*r, *c);
@@ -169,9 +175,7 @@ fn get_graph_part2(input: &str) -> ContextPart2 {
     let mut input: Vec<&str> = input.lines().collect();
     let (moves, turns) = get_instructions(input.pop().unwrap());
     input.pop().unwrap();
-    let char_vecs: Vec<Vec<char>> = input.iter()
-        .map(|l| l.chars().collect())
-        .collect();
+    let char_vecs: Vec<Vec<char>> = input.iter().map(|l| l.chars().collect()).collect();
 
     get_points_start(&char_vecs, &mut points, &mut start);
     let mut edges = get_normal_edges_part2(&points);
@@ -180,14 +184,19 @@ fn get_graph_part2(input: &str) -> ContextPart2 {
     let face_edges = get_face_edges(&char_vecs, &faces);
     add_face_wraparounds(&mut edges, &face_edges, &points, side_len);
 
-    ContextPart2 { edges, start, moves, turns }
+    ContextPart2 {
+        edges,
+        start,
+        moves,
+        turns,
+    }
 }
 
 fn add_face_wraparounds(
-    edges: &mut HashMap<(i32, i32), HashSet<Part2Edge>>,
+    edges: &mut HashMap<Position, HashSet<Part2Edge>>,
     face_edges: &HashMap<(Face, Face), Direction>,
-    points: &HashSet<(i32, i32)>,
-    side_len: i32
+    points: &HashSet<Position>,
+    side_len: i32,
 ) {
     let mut viited = Vec::new();
     for ((from, to), dir1) in face_edges {
@@ -195,43 +204,37 @@ fn add_face_wraparounds(
             continue;
         }
         if from.orthogonal_map_adjacent(to) {
-            println!("avoiding {} and {} because they're adjacent", from, to);
+            // println!("avoiding {} and {} because they're adjacent", from, to);
         }
         let opp_edge = (*to, *from);
         viited.push((*from, *to));
         viited.push(opp_edge);
         let dir2 = face_edges.get(&opp_edge).unwrap();
-        let mut from_pts = points_from_face_edge(dir2, from, side_len, points);
+        let from_pts = points_from_face_edge(dir2, from, side_len, points);
         // TODO when do we need to reverse this?
         let mut to_pts = points_from_face_edge(dir1, to, side_len, points);
 
         if (*dir1 == Direction::Right && dir2.opposite() == Direction::Down)
             || (*dir2 == Direction::Right && dir1.opposite() == Direction::Down)
-            && from.top_left.1 != to.top_left.1
+                && from.top_left.1 != to.top_left.1
         {
             to_pts.reverse();
         }
 
         if (*dir1 == Direction::Left && dir2.opposite() == Direction::Up)
             || (*dir2 == Direction::Left && dir1.opposite() == Direction::Up)
-            && from.top_left.1 != to.top_left.1
+                && from.top_left.1 != to.top_left.1
         {
             to_pts.reverse();
         }
 
         for (pt_1, pt_2) in from_pts.iter().zip(&to_pts) {
-            match edges.get_mut(pt_1) {
-                Some(x) => {
-                    // appear dir, move dir
-                    x.insert((pt_2.0, pt_2.1, Some((dir1.opposite(), *dir2))));
-                },
-                None => (),
+            if let Some(x) = edges.get_mut(pt_1) {
+                // appear dir, move dir
+                x.insert(((pt_2.0, pt_2.1), Some((dir1.opposite(), *dir2))));
             }
-            match edges.get_mut(pt_2) {
-                Some(x) => {
-                    x.insert((pt_1.0, pt_1.1, Some((dir2.opposite(), *dir1))));
-                },
-                None => (),
+            if let Some(x) = edges.get_mut(pt_2) {
+                x.insert(((pt_1.0, pt_1.1), Some((dir2.opposite(), *dir1))));
             }
         }
     }
@@ -241,39 +244,30 @@ fn points_from_face_edge(
     dir: &Direction,
     from: &Face,
     side_len: i32,
-    points: &HashSet<(i32, i32)>
-) -> Vec<(i32, i32)> {
+    points: &HashSet<Position>,
+) -> Vec<Position> {
     match dir {
-        Direction::Up => {
-            (0..side_len)
-                .map(|col| (from.top_left.0, from.top_left.1 + col - 1))
-                .filter(|x| points.contains(x))
-                .collect::<Vec<(i32, i32)>>()
-
-        },
-        Direction::Down => {
-            (0..side_len)
-                .map(|col| (from.bottom_right.0 - 1, from.top_left.1 + col))
-                .filter(|x| points.contains(x))
-                .collect::<Vec<(i32, i32)>>()
-        },
-        Direction::Left => {
-            (0..side_len)
-                .map(|row| (from.top_left.0 + row - 1, from.top_left.1))
-                .filter(|x| points.contains(x))
-                .collect::<Vec<(i32, i32)>>()
-        },
-        Direction::Right => {
-            (0..side_len)
-                .map(|row| (from.top_left.0 + row, from.bottom_right.1 - 1))
-                .filter(|x| points.contains(x))
-                .collect::<Vec<(i32, i32)>>()
-        },
+        Direction::Up => (0..side_len)
+            .map(|col| (from.top_left.0, from.top_left.1 + col - 1))
+            .filter(|x| points.contains(x))
+            .collect::<Vec<Position>>(),
+        Direction::Down => (0..side_len)
+            .map(|col| (from.bottom_right.0 - 1, from.top_left.1 + col))
+            .filter(|x| points.contains(x))
+            .collect::<Vec<Position>>(),
+        Direction::Left => (0..side_len)
+            .map(|row| (from.top_left.0 + row - 1, from.top_left.1))
+            .filter(|x| points.contains(x))
+            .collect::<Vec<Position>>(),
+        Direction::Right => (0..side_len)
+            .map(|row| (from.top_left.0 + row, from.bottom_right.1 - 1))
+            .filter(|x| points.contains(x))
+            .collect::<Vec<Position>>(),
         _ => unreachable!(),
     }
 }
 
-fn get_faces(char_vecs: &Vec<Vec<char>>, side_len: i32) -> Vec<Face> {
+fn get_faces(char_vecs: &[Vec<char>], side_len: i32) -> Vec<Face> {
     let width = char_vecs.iter().map(|x| x.len()).max().unwrap();
     let mut faces = vec![];
     for row_idx in (0..char_vecs.len()).step_by(side_len as usize) {
@@ -292,7 +286,7 @@ fn get_faces(char_vecs: &Vec<Vec<char>>, side_len: i32) -> Vec<Face> {
     faces
 }
 
-fn get_face_edges(char_vecs: &Vec<Vec<char>>, faces: &Vec<Face>) -> HashMap<(Face, Face), Direction> {
+fn get_face_edges(char_vecs: &[Vec<char>], faces: &Vec<Face>) -> HashMap<(Face, Face), Direction> {
     let side_len = get_side_len(char_vecs);
     let mut face_edges = HashMap::new();
     let mut found_edges: HashMap<Face, Vec<(&Face, Direction)>> = HashMap::new();
@@ -302,8 +296,8 @@ fn get_face_edges(char_vecs: &Vec<Vec<char>>, faces: &Vec<Face>) -> HashMap<(Fac
             if f1 == f2 {
                 continue;
             }
-            if f1.map_adjacent(&f2) {
-                let new1 = (f2, f1.direction_to(&f2).unwrap());
+            if f1.map_adjacent(f2) {
+                let new1 = (f2, f1.direction_to(f2).unwrap());
                 found_edges
                     .entry(*f1)
                     .and_modify(|x| x.push(new1))
@@ -322,7 +316,12 @@ fn get_face_edges(char_vecs: &Vec<Vec<char>>, faces: &Vec<Face>) -> HashMap<(Fac
         if first_order_neighbors.len() > 2 {
             continue;
         }
-        add_edges_to_secondary_neighbors(&mut found_edges, &mut face_edges, &first_order_neighbors, face);
+        add_edges_to_secondary_neighbors(
+            &mut found_edges,
+            &mut face_edges,
+            &first_order_neighbors,
+            face,
+        );
     }
     for _ in 0..2 {
         for face in faces {
@@ -330,7 +329,12 @@ fn get_face_edges(char_vecs: &Vec<Vec<char>>, faces: &Vec<Face>) -> HashMap<(Fac
             if first_order_neighbors.len() == 4 {
                 continue;
             }
-            add_edges_to_secondary_neighbors(&mut found_edges, &mut face_edges, &first_order_neighbors, face);
+            add_edges_to_secondary_neighbors(
+                &mut found_edges,
+                &mut face_edges,
+                &first_order_neighbors,
+                face,
+            );
         }
     }
     face_edges
@@ -355,8 +359,8 @@ fn add_edges_to_secondary_neighbors<'a>(
             add_final_face_edge(
                 &mut edges_to_add,
                 face,
-                *second_neighbor,
-                (first_dir, second_dir)
+                second_neighbor,
+                (first_dir, second_dir),
             );
         }
     }
@@ -370,24 +374,22 @@ fn add_final_face_edge<'a>(
     to_add: &mut Vec<(Face, &'a Face, Direction)>,
     start: &'a Face,
     end: &'a Face,
-    directions: (&Direction, &Direction)
+    directions: (&Direction, &Direction),
 ) {
     let dir = match directions.0 {
         Direction::Up => {
             match directions.1 {
-                Direction::UpLeft => Direction::Up, // top
+                Direction::UpLeft => Direction::Up,    // top
                 Direction::UpRight => Direction::Left, // left
                 _ => return,
             }
-        },
+        }
         Direction::Down => match directions.1 {
             Direction::Right => Direction::Right,
             Direction::Left => Direction::Left,
             _ => return,
         },
-        Direction::Left => match directions.1 {
-            _ => return,
-        },
+        Direction::Left => return,
         Direction::Right => match directions.1 {
             Direction::UpRight => Direction::Up,
             _ => return,
@@ -419,16 +421,22 @@ fn add_final_face_edge<'a>(
 fn add_adjacent_face_edges(
     face_edges: &mut HashMap<(Face, Face), Direction>,
     found_edges: &HashMap<Face, Vec<(&Face, Direction)>>,
-    side_len: i32
+    side_len: i32,
 ) {
     for (start_face, edges) in found_edges {
         let left_face = Face {
             top_left: (start_face.top_left.0, start_face.top_left.1 - side_len),
-            bottom_right: (start_face.bottom_right.0, start_face.bottom_right.1 - side_len)
+            bottom_right: (
+                start_face.bottom_right.0,
+                start_face.bottom_right.1 - side_len,
+            ),
         };
         let right_face = Face {
             top_left: (start_face.top_left.0, start_face.top_left.1 + side_len),
-            bottom_right: (start_face.bottom_right.0, start_face.bottom_right.1 + side_len)
+            bottom_right: (
+                start_face.bottom_right.0,
+                start_face.bottom_right.1 + side_len,
+            ),
         };
         for e in edges {
             let arrival_direction = match e.1 {
@@ -442,56 +450,52 @@ fn add_adjacent_face_edges(
                     } else {
                         Direction::Down
                     }
-                },
+                }
                 Direction::UpRight => {
                     if found_edges.contains_key(&right_face) {
                         Direction::Left
                     } else {
                         Direction::Up
                     }
-                },
+                }
                 Direction::DownLeft => {
                     if found_edges.contains_key(&left_face) {
                         Direction::Right
                     } else {
                         Direction::Up
                     }
-                },
+                }
                 Direction::DownRight => {
                     if found_edges.contains_key(&right_face) {
                         Direction::Left
                     } else {
                         Direction::Up
                     }
-                },
+                }
             };
             face_edges.insert((*start_face, *e.0), arrival_direction);
         }
     }
 }
 
-fn get_side_len(char_vecs: &Vec<Vec<char>>) -> i32 {
-    let square_ct = char_vecs
-        .iter()
-        .flatten()
-        .filter(|x| **x != ' ')
-        .count();
+fn get_side_len(char_vecs: &[Vec<char>]) -> i32 {
+    let square_ct = char_vecs.iter().flatten().filter(|x| **x != ' ').count();
     ((square_ct / 6) as f64).sqrt() as i32
 }
 
-fn get_normal_edges_part2(points: &HashSet<(i32, i32)>
-) -> HashMap<(i32, i32), HashSet<Part2Edge>> {
+fn get_normal_edges_part2(points: &HashSet<Position>) -> HashMap<Position, HashSet<Part2Edge>> {
     let mut normal_edges = HashMap::new();
-    add_normal_edges(&mut normal_edges, &points);
+    add_normal_edges(&mut normal_edges, points);
     let edges = normal_edges
         .iter()
-        .map(|(k, v)|
-            (   *k,
+        .map(|(k, v)| {
+            (
+                *k,
                 v.iter()
-                    .map(|x| (x.0, x.1, None))
-                    .collect::<HashSet<Part2Edge>>()
+                    .map(|x| ((x.0, x.1), None))
+                    .collect::<HashSet<Part2Edge>>(),
             )
-        )
+        })
         .collect();
     edges
 }
@@ -502,16 +506,11 @@ fn get_dir_val(dir: &Direction) -> i32 {
         Direction::Down => 1,
         Direction::Left => 2,
         Direction::Up => 3,
-        _ => unreachable!()
+        _ => unreachable!(),
     }
 }
 
-fn make_move(
-    ctx: &ContextPart1,
-    pos: &mut (i32, i32),
-    dir: &Direction,
-    mv: &i32
-) {
+fn make_move(ctx: &ContextPart1, pos: &mut Position, dir: &Direction, mv: &i32) {
     for _ in 0..*mv {
         let neighbors = ctx.edges.get(pos).unwrap();
         let mut moved = false;
@@ -543,19 +542,23 @@ fn get_graph(input: &str) -> ContextPart1 {
     let mut input: Vec<&str> = input.lines().collect();
     let (moves, turns) = get_instructions(input.pop().unwrap());
     input.pop().unwrap();
-    let char_vecs: Vec<Vec<char>> = input.iter()
-        .map(|l| l.chars().collect())
-        .collect();
+    let char_vecs: Vec<Vec<char>> = input.iter().map(|l| l.chars().collect()).collect();
 
     get_points_start(&char_vecs, &mut points, &mut start);
     add_normal_edges(&mut edges, &points);
     add_wraparound_edges(&char_vecs, &mut edges);
-    ContextPart1 { edges, start, moves, turns }
+    ContextPart1 {
+        edges,
+        start,
+        moves,
+        turns,
+    }
 }
 
 fn get_instructions(input: &str) -> (Vec<i32>, Vec<char>) {
     let input = input.to_string();
-    let turns = input.split(|x: char| x.is_numeric())
+    let turns = input
+        .split(|x: char| x.is_numeric())
         .filter(|x| !x.is_empty())
         .map(|x| x.chars().next().unwrap())
         .collect();
@@ -566,10 +569,7 @@ fn get_instructions(input: &str) -> (Vec<i32>, Vec<char>) {
     (moves, turns)
 }
 
-fn add_wraparound_edges(
-    char_vecs: &Vec<Vec<char>>,
-    edges: &mut HashMap<(i32, i32), HashSet<(i32, i32)>>
-) {
+fn add_wraparound_edges(char_vecs: &[Vec<char>], edges: &mut HashMap<Position, HashSet<Position>>) {
     let mut max_width = 0;
     for row_idx in 0..char_vecs.len() {
         let row = char_vecs.get(row_idx).unwrap();
@@ -582,9 +582,13 @@ fn add_wraparound_edges(
             if *cell == '#' {
                 break;
             } else if *cell == '.' {
-                edges.get_mut(&(row_idx as i32, col_idx as i32)).unwrap()
+                edges
+                    .get_mut(&(row_idx as i32, col_idx as i32))
+                    .unwrap()
                     .insert((row_idx as i32, row.len() as i32 - 1));
-                edges.get_mut(&(row_idx as i32, row.len() as i32 - 1)).unwrap()
+                edges
+                    .get_mut(&(row_idx as i32, row.len() as i32 - 1))
+                    .unwrap()
                     .insert((row_idx as i32, col_idx as i32));
                 break;
             }
@@ -613,8 +617,11 @@ fn add_wraparound_edges(
         if col_end == (i32::MAX, i32::MAX) || col_start == (i32::MAX, i32::MAX) {
             continue;
         }
-        let endpoint = char_vecs.get(col_end.0 as usize).unwrap()
-            .get(col_end.1 as usize).unwrap();
+        let endpoint = char_vecs
+            .get(col_end.0 as usize)
+            .unwrap()
+            .get(col_end.1 as usize)
+            .unwrap();
         if *endpoint == '.' {
             edges.get_mut(&col_start).unwrap().insert(col_end);
             edges.get_mut(&col_end).unwrap().insert(col_start);
@@ -622,10 +629,7 @@ fn add_wraparound_edges(
     }
 }
 
-fn add_normal_edges(
-    edges: &mut HashMap<(i32, i32), HashSet<(i32, i32)>>,
-    points: &HashSet<(i32, i32)>
-) {
+fn add_normal_edges(edges: &mut HashMap<Position, HashSet<Position>>, points: &HashSet<Position>) {
     for (x, y) in points {
         let mut neighbors = HashSet::new();
         if points.contains(&(x + 1, *y)) {
@@ -644,11 +648,7 @@ fn add_normal_edges(
     }
 }
 
-fn get_points_start(
-    char_vecs: &Vec<Vec<char>>,
-    points: &mut HashSet<(i32, i32)>,
-    start: &mut (i32, i32)
-) {
+fn get_points_start(char_vecs: &[Vec<char>], points: &mut HashSet<Position>, start: &mut Position) {
     for row_idx in 0..char_vecs.len() {
         let row = char_vecs.get(row_idx).unwrap();
         for col_idx in 0..row.len() {
@@ -679,4 +679,3 @@ mod tests {
         assert_eq!(result, Some(5031));
     }
 }
-

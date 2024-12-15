@@ -11,9 +11,7 @@ pub fn part_one(input: &str) -> Option<i64> {
 
 pub fn part_two(input: &str) -> Option<i64> {
     let mut decrypt = get_numbers(input);
-    decrypt = decrypt.iter()
-        .map(|x| (x.0 * KEY, x.1))
-        .collect();
+    decrypt = decrypt.iter().map(|x| (x.0 * KEY, x.1)).collect();
     let count = decrypt.len();
     for _ in 0..10 {
         mix_numbers(&mut decrypt, count);

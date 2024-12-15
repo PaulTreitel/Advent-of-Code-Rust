@@ -44,11 +44,15 @@ fn split_rucksack(sack: &str) -> (&str, &str) {
 }
 
 fn get_shared_char_three_bags(sack: (&str, &str, &str)) -> Option<char> {
-    sack.0.chars().find(|&sack0_item| sack.1.contains(sack0_item) && sack.2.contains(sack0_item))
+    sack.0
+        .chars()
+        .find(|&sack0_item| sack.1.contains(sack0_item) && sack.2.contains(sack0_item))
 }
 
 fn get_shared_char_two_bags(sack: (&str, &str)) -> Option<char> {
-    sack.0.chars().find(|&sack0_item| sack.1.contains(sack0_item))
+    sack.0
+        .chars()
+        .find(|&sack0_item| sack.1.contains(sack0_item))
 }
 
 #[cfg(test)]

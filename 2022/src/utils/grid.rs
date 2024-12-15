@@ -24,8 +24,6 @@ impl<GridCell> Iterator for GridIterator<GridCell> {
 pub struct GridPos {
     row: usize,
     col: usize,
-    irow: i64,
-    icol: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -37,57 +35,7 @@ pub struct Grid<T: GridCell> {
 
 impl GridPos {
     pub fn new(row: usize, col: usize) -> Self {
-        GridPos {
-            row,
-            col,
-            irow: row as i64,
-            icol: col as i64
-        }
-    }
-
-    pub fn inew(irow: i64, icol: i64) -> Self {
-        GridPos {
-            row: irow as usize,
-            col: icol as usize,
-            irow,
-            icol
-        }
-    }
-
-    fn row(&self) -> usize {
-        self.row
-    }
-
-    fn col(&self) -> usize {
-        self.col
-    }
-
-    fn irow(&self) -> i64 {
-        self.irow
-    }
-
-    fn icol(&self) -> i64 {
-        self.icol
-    }
-
-    fn set_row(&mut self, row: usize) {
-        self.row = row;
-        self.irow = row as i64;
-    }
-
-    fn set_col(&mut self, col: usize) {
-        self.col = col;
-        self.icol = col as i64;
-    }
-
-    fn set_irow(&mut self, row: i64) {
-        self.row = row as usize;
-        self.irow = row;
-    }
-
-    fn set_icol(&mut self, col: i64) {
-        self.col = col as usize;
-        self.icol = col;
+        GridPos { row, col }
     }
 }
 

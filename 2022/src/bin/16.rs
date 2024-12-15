@@ -1,12 +1,16 @@
 advent_of_code_2022::solution!(16);
 
 use petgraph::{
-    algo::floyd_warshall, graph::{self, NodeIndex, UnGraph}, visit::NodeRef, Graph, Undirected
+    algo::floyd_warshall,
+    graph::{NodeIndex, UnGraph},
+    Graph, Undirected,
 };
 use std::{
     cmp::max,
     collections::{HashMap, HashSet, VecDeque},
-    hash::{DefaultHasher, Hash, Hasher}, num::Wrapping, ops::{Deref, DerefMut}
+    hash::{DefaultHasher, Hash, Hasher},
+    num::Wrapping,
+    ops::{Deref, DerefMut},
 };
 
 const PART_ONE_TIME: i32 = 30;
@@ -23,14 +27,6 @@ struct Part1State {
 struct Part2State {
     graph: Graph<i32, (), Undirected>,
     dists: HashMap<(NodeIndex, NodeIndex), i32>,
-    me_pos: NodeIndex,
-    me_dest: NodeIndex,
-    me_eta: i32,
-    elephant_pos: NodeIndex,
-    elephant_dest: NodeIndex,
-    elephant_eta: i32,
-    opened: HashSet<NodeIndex>,
-    released: i32,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -74,23 +70,12 @@ pub fn part_one(input: &str) -> Option<i32> {
 pub fn part_two(input: &str) -> Option<i32> {
     let (start, graph) = get_graph(input);
     let dists = floyd_warshall(&graph, |_| 1).ok().unwrap();
-    let state = Part2State {
-        graph,
-        dists,
-        me_pos: start,
-        me_dest: start,
-        me_eta: 0,
-        elephant_pos: start,
-        elephant_dest: start,
-        elephant_eta: 0,
-        opened: HashSet::new(),
-        released: 0,
-    };
+    let state = Part2State { graph, dists };
     let valve_release_values = valve_release_bfs(&state, start, PART_TWO_TIME);
     let mut best_soln = 0;
     for (set1, res1) in &valve_release_values {
         for (set2, res2) in &valve_release_values {
-            if set1.is_disjoint(&set2) {
+            if set1.is_disjoint(set2) {
                 best_soln = max(best_soln, res1 + res2);
             }
         }
@@ -98,15 +83,24 @@ pub fn part_two(input: &str) -> Option<i32> {
     Some(best_soln)
 }
 
-fn valve_release_bfs(state: &Part2State, start: NodeIndex, time_left: i32
+fn valve_release_bfs(
+    state: &Part2State,
+    start: NodeIndex,
+    time_left: i32,
 ) -> HashMap<HashSetWrapper<NodeIndex>, i32> {
-    let nonzero_nodes: Vec<NodeIndex> = state.graph
+    let nonzero_nodes: Vec<NodeIndex> = state
+        .graph
         .node_indices()
         .filter(|x| *state.graph.node_weight(*x).unwrap() > 0)
         .collect();
     let mut release_values = HashMap::new();
     let mut queue = VecDeque::new();
-    queue.push_back((start, time_left, 0, HashSetWrapper(HashSet::<NodeIndex>::new())));
+    queue.push_back((
+        start,
+        time_left,
+        0,
+        HashSetWrapper(HashSet::<NodeIndex>::new()),
+    ));
 
     while let Some((node, time, pressure, opened)) = queue.pop_front() {
         for neighbor in &nonzero_nodes {

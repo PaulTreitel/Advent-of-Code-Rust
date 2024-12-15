@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Direction {
     Up,
@@ -152,7 +151,7 @@ impl MapDirection {
         }
     }
 
-    fn to_direction(&self) -> Direction {
+    fn to_direction(self) -> Direction {
         match self {
             Self::North => Direction::Up,
             Self::South => Direction::Down,
