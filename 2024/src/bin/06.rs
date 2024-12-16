@@ -113,14 +113,14 @@ fn get_visited_set(map: &Grid<MapCell>) -> HashSet<GridPos> {
 
 pub fn part_one(input: &str) -> Option<u32> {
     let mut map = parse_input(input);
-    let start_pos = map.index_of(&MapCell::GuardPosition).unwrap();
+    let start_pos = map.index_of(|x| *x == MapCell::GuardPosition).unwrap();
     track_guard_around_map(&mut map, &start_pos);
     Some(map.count(|x| x == &MapCell::Visited) as u32)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
     let mut map = parse_input(input);
-    let start_pos = map.index_of(&MapCell::GuardPosition).unwrap();
+    let start_pos = map.index_of(|x| *x == MapCell::GuardPosition).unwrap();
     let mut new_map = map.clone();
     track_guard_around_map(&mut new_map, &start_pos);
     let visited = get_visited_set(&new_map);

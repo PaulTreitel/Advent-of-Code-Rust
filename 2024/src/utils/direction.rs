@@ -115,6 +115,19 @@ impl Direction {
             Direction::DownLeft => Direction::UpLeft,
         }
     }
+
+    pub fn opposite(&self) -> Self {
+        match self {
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+            Self::UpLeft => Self::DownRight,
+            Self::UpRight => Self::DownLeft,
+            Self::DownLeft => Self::UpRight,
+            Self::DownRight => Self::UpLeft,
+        }
+    }
 }
 
 impl DirectionType {

@@ -10,19 +10,9 @@ const PART_ONE_SECONDS: i64 = 100;
 
 pub fn part_one(input: &str) -> Option<u64> {
     let dimensions = get_dimensions(input);
-    let mut robots = parse_input(input);
-    for _ in 0..PART_ONE_SECONDS {
-        robots = robots
-            .iter()
-            .map(|((xpos, ypos), (xvel, yvel))| {
-                (((*xpos + *xvel).rem_euclid(dimensions.0), (*ypos + *yvel).rem_euclid(dimensions.1)),
-                (*xvel, *yvel))
-            })
-            .collect();
-    }
-    let positions: Vec<(i64, i64)> = robots.iter().map(|(x, _)| *x).collect();
-    // let final_positions = run_robot_sim(&robots, dimensions, PART_ONE_SECONDS);
-    Some(compute_safety_factor(&positions, dimensions))
+    let robots = parse_input(input);
+    let final_positions = run_robot_sim(&robots, dimensions, PART_ONE_SECONDS);
+    Some(compute_safety_factor(&final_positions, dimensions))
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
@@ -131,6 +121,6 @@ mod tests {
     fn test_part_two() {
         let input = advent_of_code_2024::template::read_file("examples", DAY);
         let result = part_two(&input);
-        assert_eq!(result, None);
+        assert_eq!(result, Some(1));
     }
 }

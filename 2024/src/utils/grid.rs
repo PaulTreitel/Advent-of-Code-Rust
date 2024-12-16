@@ -160,10 +160,10 @@ impl<T: GridCell> Grid<T> {
         Some(new_col)
     }
 
-    pub fn index_of(&self, eq: &T) -> Option<GridPos> {
+    pub fn index_of(&self, eq: impl Fn(&T) -> bool) -> Option<GridPos> {
         for r in 0..self.rows {
             for c in 0..self.cols {
-                if self.grid.get(r)?.get(c)?.eq(eq) {
+                if eq(self.grid.get(r)?.get(c)?) {
                     return Some(GridPos::new(r, c));
                 }
             }
