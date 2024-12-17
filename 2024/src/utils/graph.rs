@@ -3,33 +3,48 @@
 use std::collections::HashMap;
 
 pub trait BfsDfs<Value, Position> {
-    fn bfs_find_first_match(
+
+    fn bfs_first_match(
         &self,
         start: &Position,
         has_edge: impl Fn((&Position, &Value), (&Position, &Value)) -> bool,
         matches: impl Fn(&Position, &Value) -> bool,
     ) -> Option<(usize, Position)>;
 
-    fn bfs_find_all_matches(
+    fn bfs_all_matches(
         &self,
         start: &Position,
         has_edge: impl Fn((&Position, &Value), (&Position, &Value)) -> bool,
         matches: impl Fn(&Position, &Value) -> bool,
     ) -> Vec<(usize, Position)>;
 
-    fn dfs_find_first_match(
+    fn bfs_first_match_path(
+        &self,
+        start: &Position,
+        has_edge: impl Fn((&Position, &Value), (&Position, &Value)) -> bool,
+        matches: impl Fn(&Position, &Value) -> bool,
+    ) -> Option<(usize, Position, Vec<Position>)>;
+
+    fn dfs_first_match(
         &self,
         start: &Position,
         has_edge: impl Fn((&Position, &Value), (&Position, &Value)) -> bool,
         matches: impl Fn(&Position, &Value) -> bool,
     ) -> Option<(usize, Position)>;
 
-    fn dfs_find_all_matches(
+    fn dfs_all_matches(
         &self,
         start: &Position,
         has_edge: impl Fn((&Position, &Value), (&Position, &Value)) -> bool,
         matches: impl Fn(&Position, &Value) -> bool,
     ) -> Vec<(usize, Position)>;
+
+    fn dfs_first_match_path(
+        &self,
+        start: &Position,
+        has_edge: impl Fn((&Position, &Value), (&Position, &Value)) -> bool,
+        matches: impl Fn(&Position, &Value) -> bool,
+    ) -> Option<(usize, Position, Vec<Position>)>;
 
     fn bfs_dfs_full(
         &self,

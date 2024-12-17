@@ -53,7 +53,7 @@ fn get_trailheads(map: &Grid<u32>) -> TrailHeadMap {
 fn find_full_trails(map: &Grid<u32>, trailheads: &mut TrailHeadMap) {
     for head in trailheads.clone().keys() {
         let endpoints = trailheads.get_mut(head).unwrap();
-        *endpoints = map.bfs_find_all_matches(
+        *endpoints = map.bfs_all_matches(
             head,
             |(_, v1), (_, v2)| *v2 == *v1 + 1,
             |_, v| *v == TRAILEND

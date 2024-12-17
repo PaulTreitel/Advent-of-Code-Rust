@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub const ORTHOGONAL_DIRECTIONS: [Direction; 4] = [
     Direction::Up,
     Direction::Down,
@@ -127,6 +129,12 @@ impl Direction {
             Self::DownLeft => Self::UpRight,
             Self::DownRight => Self::UpLeft,
         }
+    }
+}
+
+impl fmt::Display for Direction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
