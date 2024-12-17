@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use advent_of_code_2024::utils::{graph::BfsDfs, grid::{Grid, GridPos}, parse};
+use advent_of_code_2024::utils::{grid::{Grid, GridPos}, parse};
 
 const TRAILHEAD: u32 = 0;
 const TRAILEND: u32 = 9;

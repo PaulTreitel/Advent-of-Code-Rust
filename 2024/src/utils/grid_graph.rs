@@ -1,9 +1,9 @@
 use std::{cmp::Ordering, collections::{HashMap, HashSet, VecDeque}};
 
-use super::{graph::BfsDfs, grid::{Grid, GridCell, GridPos}};
+use super::grid::{Grid, GridCell, GridPos};
 
-impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
-    fn bfs_first_match(
+impl<T: GridCell> Grid<T> {
+    pub fn bfs_first_match(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -13,7 +13,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
             .first().copied()
     }
 
-    fn bfs_all_matches(
+    pub fn bfs_all_matches(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -22,7 +22,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
         self.bfs(start, has_edge, matches, false, false)
     }
 
-    fn bfs_first_match_path(
+    pub fn bfs_first_match_path(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -32,7 +32,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
             .first().cloned()
     }
 
-    fn dfs_first_match(
+    pub fn dfs_first_match(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -42,7 +42,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
             .first().copied()
     }
 
-    fn dfs_all_matches(
+    pub fn dfs_all_matches(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -51,7 +51,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
         self.dfs(start, has_edge, matches, false, false)
     }
 
-    fn dfs_first_match_path(
+    pub fn dfs_first_match_path(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -61,7 +61,7 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
             .first().cloned()
     }
 
-    fn bfs_dfs_full(
+    pub fn bfs_dfs_full(
         &self,
         start: &GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -78,10 +78,8 @@ impl<T: GridCell> BfsDfs<T, GridPos> for Grid<T> {
             .map(|(i, pos)| (*pos, (*i, self.get(pos).unwrap())))
             .collect()
     }
-}
 
-/* Necessary Helper Functions For BFS/DFS */
-impl<T: GridCell> Grid<T> {
+    /* Necessary Helper Functions For BFS/DFS */
     fn bfs(
         &self,
         start: &GridPos,
