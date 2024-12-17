@@ -1,12 +1,14 @@
-use std::{cmp::Ordering, collections::{HashMap, HashSet, VecDeque}};
+use std::{cmp::Ordering, collections::{BinaryHeap, HashMap, HashSet, VecDeque}};
 
 use super::grid::{Grid, GridCell, GridPos};
 
 impl<T: GridCell> Grid<T> {
+
     /* BFS/DFS Methods */
+
     pub fn bfs_first_match(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Option<(usize, GridPos)> {
@@ -16,7 +18,7 @@ impl<T: GridCell> Grid<T> {
 
     pub fn bfs_all_matches(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Vec<(usize, GridPos)> {
@@ -25,7 +27,7 @@ impl<T: GridCell> Grid<T> {
 
     pub fn dfs_first_match(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Option<(usize, GridPos)> {
@@ -35,7 +37,7 @@ impl<T: GridCell> Grid<T> {
 
     pub fn dfs_all_matches(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
     ) -> Vec<(usize, GridPos)> {
@@ -44,7 +46,7 @@ impl<T: GridCell> Grid<T> {
 
     pub fn bfs_dfs_full(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
     ) -> HashMap<GridPos, (usize, &T)> {
         let mut all: Vec<(usize, GridPos)> = self
@@ -61,9 +63,10 @@ impl<T: GridCell> Grid<T> {
     }
 
     /* Helper Methods For BFS/DFS */
+
     fn bfs(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
         only_find_first: bool,
@@ -82,7 +85,7 @@ impl<T: GridCell> Grid<T> {
 
     fn dfs(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
         only_find_first: bool,
@@ -101,7 +104,7 @@ impl<T: GridCell> Grid<T> {
 
     fn bfs_dfs_internal<Storage: Clone>(
         &self,
-        start: &GridPos,
+        start: GridPos,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         matches: impl Fn(&GridPos, &T) -> bool,
         only_find_first: bool,
@@ -113,18 +116,14 @@ impl<T: GridCell> Grid<T> {
         let mut result = vec![];
         let mut visited = HashSet::new();
         let mut queue_stack = queue_stack.clone();
-        qs_insert(&mut queue_stack, (0, *start));
-        if matches(start, self.get(start).unwrap()) {
-            result.push((0, *start));
+        qs_insert(&mut queue_stack, (0, start));
+        if matches(&start, self.get(&start).unwrap()) {
+            result.push((0, start));
         }
         while let Some((i, pos)) = qs_remove(&mut queue_stack) {
             visited.insert(pos);
             let curr = (&pos, self.get(&pos).unwrap());
-            let new_positions = match self.graph_edge_type() {
-                super::direction::DirectionType::Orthogonal => pos.get_orthogonal_neighbors(),
-                super::direction::DirectionType::Diagonal => pos.get_diag_neighbors(),
-                super::direction::DirectionType::All => pos.get_all_neighbors(),
-            };
+            let new_positions = self.get_neighbors(pos);
             for new_pos in new_positions {
                 if !self.is_valid_cell(&new_pos) {
                     continue;
@@ -184,5 +183,49 @@ impl<T: GridCell> Grid<T> {
             )
             .collect();
         Grid::from(new_grid)
+    }
+
+    fn get_neighbors(&self, pos: GridPos) -> Vec<GridPos> {
+        match self.graph_edge_type() {
+            super::direction::DirectionType::Orthogonal => pos.get_orthogonal_neighbors(),
+            super::direction::DirectionType::Diagonal => pos.get_diag_neighbors(),
+            super::direction::DirectionType::All => pos.get_all_neighbors(),
+        }
+    }
+
+    /* Dijkstra's */
+
+    pub fn dijkstra(
+        &self,
+        start: GridPos,
+        edge_weight: impl Fn(&GridPos, &GridPos) -> Option<i64>
+    ) -> (HashMap<GridPos, i64>, HashMap<GridPos, Vec<GridPos>>) {
+        let mut distances = HashMap::with_capacity(self.rows() * self.cols());
+        let mut paths: HashMap<GridPos, Vec<GridPos>> = HashMap::with_capacity(self.rows() * self.cols());
+        let mut heap = BinaryHeap::new();
+        distances.insert(start, 0);
+        heap.push((0i64, start));
+        while let Some((cost, pos)) = heap.pop() {
+            if distances.contains_key(&pos) && cost > *distances.get(&pos).unwrap() {
+                continue;
+            }
+            for neighbor in self.get_neighbors(pos) {
+                let edge = edge_weight(&pos, &neighbor);
+                if let Some(weight) = edge {
+                    if !distances.contains_key(&neighbor)
+                        || cost + weight < *distances.get(&neighbor).unwrap()
+                    {
+                        heap.push((cost + weight, neighbor));
+                        distances.entry(neighbor)
+                            .and_modify(|x| *x = cost + weight)
+                            .or_insert(cost + weight);
+                        paths.entry(neighbor)
+                            .and_modify(|x| x.push(pos))
+                            .or_insert(vec![pos]);
+                    }
+                }
+            }
+        }
+        (distances, paths)
     }
 }
