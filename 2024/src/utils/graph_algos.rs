@@ -1,6 +1,55 @@
 use std::collections::{BinaryHeap, HashMap};
 
-use graph_builder::prelude::*;
+use graph_builder::{DirectedNeighborsWithValues, UndirectedNeighborsWithValues};
+use petgraph::{
+    graph::{node_index, NodeIndex},
+    visit::{
+        depth_first_search,
+        Control,
+        DfsEvent,
+        GraphRef,
+        IntoNeighbors,
+        NodeCount,
+        VisitMap,
+        Visitable
+    }
+};
+
+pub fn dfs_get_path<G, VM>(
+    graph: G,
+    start: NodeIndex<usize>,
+    is_goal: impl Fn(NodeIndex<usize>) -> bool
+) -> Option<Vec<usize>>
+where
+    VM: VisitMap<NodeIndex>,
+    G: GraphRef + Visitable<NodeId = NodeIndex<usize>, Map = VM> + IntoNeighbors + NodeCount
+{
+    let mut goal_node= node_index(graph.node_count() + 1);
+    let mut predecessor = vec![NodeIndex::end(); graph.node_count()];
+    depth_first_search(&graph, Some(start), |event| {
+        if let DfsEvent::TreeEdge(u, v) = event {
+            predecessor[v.index()] = u;
+            if is_goal(v) {
+                goal_node = v;
+                return Control::Break(v);
+            }
+        }
+        Control::Continue
+    });
+    if goal_node.index() == graph.node_count() + 1 {
+        return None;
+    }
+
+    let mut next = goal_node;
+    let mut path = vec![next.index()];
+    while next != start {
+        let pred = predecessor[next.index()];
+        path.push(pred.index());
+        next = pred;
+    }
+    path.reverse();
+    Some(path)
+}
 
 pub fn directed_dijkstra<T, Graph, Dist>(
     graph: &Graph,

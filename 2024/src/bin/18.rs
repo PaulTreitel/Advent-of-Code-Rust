@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use advent_of_code_2024::utils::grid::{Grid, GridPos};
-use petgraph::{algo::dijkstra, matrix_graph::MatrixGraph, visit::Dfs, Undirected};
+use petgraph::{algo::dijkstra, graph::node_index, matrix_graph::MatrixGraph, visit::Dfs, Undirected};
 
 advent_of_code_2024::solution!(18);
 
@@ -25,7 +25,6 @@ pub fn part_one(input: &str) -> Option<u64> {
     }
     let (
         graph,
-        _,
         pos_to_node
     ) = graph_from_grid(&grid);
     let start = *pos_to_node.get(&GridPos { row: 0, col: 0 }).unwrap();
@@ -45,7 +44,6 @@ pub fn part_two(input: &str) -> Option<String> {
     let (grid, corruptions) = parse_input(input, side_len);
     let (
         mut graph,
-        _,
         pos_to_node
     ) = graph_from_grid(&grid);
     let start = *pos_to_node.get(&GridPos { row: 0, col: 0 }).unwrap();
@@ -76,36 +74,31 @@ fn parse_input(input: &str, side_len: usize) -> (Grid<MemSpace>, Vec<GridPos>) {
 }
 
 fn graph_from_grid(grid: &Grid<MemSpace>) -> (
-    MatrixGraph<(), u64, Undirected, Option<u64>, usize>,
-    HashMap<usize, GridPos>,
+    MatrixGraph<GridPos, u64, Undirected, Option<u64>, usize>,
     HashMap<GridPos, usize>,
 ) {
-    let mut node_id_to_pos = HashMap::with_capacity(grid.rows() * grid.cols());
+    // let mut node_id_to_pos = Vec::with_capacity(grid.rows() * grid.cols());
     let mut pos_to_node_id = HashMap::with_capacity(grid.rows() * grid.cols());
-    let mut edges = vec![];
-    for (idx, (pos, tile)) in grid.iter_by_rows().enumerate() {
-        if tile == MemSpace::Corrupted {
-            continue;
+    let mut graph = MatrixGraph::with_capacity(grid.rows() * grid.cols());
+
+    for (pos, tile) in grid.iter_by_rows() {
+        if tile == MemSpace::Path {
+            let id = graph.node_count();
+            pos_to_node_id.insert(pos, id);
+            graph.add_node(pos);
         }
-        node_id_to_pos.insert(idx, pos);
-        pos_to_node_id.insert(pos, idx);
     }
 
-    for (node_id, pos) in &node_id_to_pos {
-        for neighbor in pos.get_orthogonal_neighbors() {
-            if !grid.is_valid_cell(&neighbor)
-                || *grid.get(&neighbor).unwrap() == MemSpace::Corrupted
-            {
-                continue;
-            }
-            let neighbor_id = *pos_to_node_id.get(&neighbor).unwrap();
-            if !edges.contains(&(neighbor_id, *node_id, 1u64)) {
-                edges.push((*node_id, neighbor_id, 1u64));
+    for node_id in 0..graph.node_count() {
+        for n in graph[node_index(node_id)].get_orthogonal_neighbors() {
+            if let Some(&neighbor_id) = pos_to_node_id.get(&n) {
+                if !graph.has_edge(neighbor_id.into(), node_id.into()){
+                    graph.add_edge(node_id.into(), neighbor_id.into(), 1u64);
+                }
             }
         }
     }
-    let graph = MatrixGraph::from_edges(edges);
-    (graph, node_id_to_pos, pos_to_node_id)
+    (graph, pos_to_node_id)
 }
 
 fn get_is_real(input: &str) -> (usize, usize) {
@@ -117,7 +110,7 @@ fn get_is_real(input: &str) -> (usize, usize) {
 }
 
 fn run_part_two_sim(
-    graph: &mut MatrixGraph<(), u64, Undirected, Option<u64>, usize>,
+    graph: &mut MatrixGraph<GridPos, u64, Undirected, Option<u64>, usize>,
     corruptions: &Vec<GridPos>,
     pos_to_id: &HashMap<GridPos, usize>,
     start: usize,
