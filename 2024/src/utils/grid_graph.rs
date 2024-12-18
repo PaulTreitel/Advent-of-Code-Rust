@@ -1,6 +1,8 @@
 use std::{cmp::Ordering, collections::{BinaryHeap, HashMap, HashSet, VecDeque}};
 
-use super::grid::{Grid, GridCell, GridPos};
+use petgraph::{graph::node_index, prelude::StableGraph, visit::NodeIndexable, Directed, EdgeType, Undirected};
+
+use super::{graph_algos::GraphWrapper, grid::{Grid, GridCell, GridPos}};
 
 impl<T: GridCell> Grid<T> {
 
@@ -230,5 +232,68 @@ impl<T: GridCell> Grid<T> {
             }
         }
         dists_paths
+    }
+
+    /* Converting into a petgraph */
+
+    pub fn to_undir_graph<EWeight>(
+        self,
+        is_node: impl Fn(GridPos, T) -> bool,
+        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
+    ) -> GraphWrapper<GridPos, EWeight, Undirected> {
+        self.to_graph_internal::<EWeight, Undirected>(false, is_node, has_edge, edge_weight)
+    }
+
+    pub fn to_dir_graph<EWeight>(
+        self,
+        is_node: impl Fn(GridPos, T) -> bool,
+        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
+    ) -> GraphWrapper<GridPos, EWeight, Directed> {
+        self.to_graph_internal::<EWeight, Directed>(true, is_node, has_edge, edge_weight)
+    }
+
+    fn to_graph_internal<EWeight, EType: EdgeType>(
+        self,
+        directed: bool,
+        is_node: impl Fn(GridPos, T) -> bool,
+        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
+    ) -> GraphWrapper<GridPos, EWeight, EType> {
+        let num_cells = self.rows() * self.cols();
+        let mut pos_to_node_id = HashMap::with_capacity(num_cells);
+        let mut graph = StableGraph::with_capacity(num_cells, 4 * num_cells);
+
+        for (pos, val) in self.iter_by_rows() {
+            if is_node(pos, val) {
+                let id = graph.node_bound();
+                pos_to_node_id.insert(pos, vec![node_index(id)]);
+                graph.add_node(pos);
+            }
+        }
+
+        for node_id in 0..graph.node_count() {
+            let start_pos = graph[node_index(node_id)];
+            let start = (&start_pos, self.get(&start_pos).unwrap());
+            for neighbor_pos in start_pos.get_orthogonal_neighbors() {
+                if !self.is_valid_cell(&neighbor_pos) {
+                    continue;
+                }
+                let neighbor = (&neighbor_pos, self.get(&neighbor_pos).unwrap());
+                if !has_edge(start, neighbor) {
+                    continue;
+                }
+
+                let weight = edge_weight(start, neighbor);
+                if let Some(neighbor_id) = pos_to_node_id.get(&neighbor_pos) {
+                    let neighbor_id = *neighbor_id.first().unwrap();
+                    if directed || !graph.contains_edge(neighbor_id, node_id.into()) {
+                        graph.add_edge(node_id.into(), neighbor_id.into(), weight);
+                    }
+                }
+            }
+        }
+        GraphWrapper::new(graph, pos_to_node_id)
     }
 }

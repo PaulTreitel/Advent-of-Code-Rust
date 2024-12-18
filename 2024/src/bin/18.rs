@@ -1,12 +1,6 @@
-use std::collections::HashMap;
-
 use advent_of_code_2024::utils::{graph_algos::GraphWrapper, grid::{Grid, GridPos}};
-use petgraph::{
-    algo::dijkstra,
-    graph::{node_index, NodeIndex},
-    prelude::StableGraph,
-    visit::Dfs, Undirected
-};
+
+use petgraph::{algo::dijkstra, graph::NodeIndex, visit::Dfs, Undirected};
 
 advent_of_code_2024::solution!(18);
 
@@ -30,7 +24,7 @@ pub fn part_one(input: &str) -> Option<u64> {
         let corruption = corruptions.get(corruption_idx).unwrap();
         *grid.get_mut(corruption).unwrap() = MemSpace::Corrupted;
     }
-    let memgraph = graph_from_grid(&grid);
+    let memgraph = graph_from_grid(grid);
     let (start, end) = get_start_end(&memgraph, side_len);
     let dists = dijkstra(
         &memgraph.graph(),
@@ -45,7 +39,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 pub fn part_two(input: &str) -> Option<String> {
     let (_, side_len) = get_is_real(input);
     let (grid, corruptions) = parse_input(input, side_len);
-    let mut memgraph = graph_from_grid(&grid);
+    let mut memgraph = graph_from_grid(grid);
     let (start, end) = get_start_end(&memgraph, side_len);
 
     let final_corruption = run_part_two_sim(
@@ -84,32 +78,14 @@ fn get_start_end(memgraph: &MemGraph, side_len: usize) -> (NodeIndex<usize>, Nod
     (start, end)
 }
 
-fn graph_from_grid(grid: &Grid<MemSpace>) -> MemGraph {
-    let num_cells = grid.rows() * grid.cols();
-    let mut pos_to_node_id = HashMap::with_capacity(num_cells);
-    let mut node_id_to_pos = HashMap::with_capacity(num_cells);
-    let mut graph = StableGraph::with_capacity(num_cells, 4 * num_cells);
-
-    for (pos, tile) in grid.iter_by_rows() {
-        if tile == MemSpace::Path {
-            let id = graph.node_count();
-            pos_to_node_id.insert(pos, vec![node_index(id)]);
-            node_id_to_pos.insert(node_index::<usize>(id), pos);
-            graph.add_node(pos);
-        }
-    }
-
-    for node_id in 0..graph.node_count() {
-        for n in graph[node_index(node_id)].get_orthogonal_neighbors() {
-            if let Some(neighbor_id) = pos_to_node_id.get(&n).cloned() {
-                let neighbor_id = *neighbor_id.first().unwrap();
-                if !graph.contains_edge(neighbor_id, node_id.into()){
-                    graph.add_edge(node_id.into(), neighbor_id.into(), 1u64);
-                }
-            }
-        }
-    }
-    GraphWrapper::new(graph.clone(), pos_to_node_id)
+fn graph_from_grid(grid: Grid<MemSpace>) -> MemGraph {
+    grid.to_undir_graph(
+        |_, tile| tile == MemSpace::Path,
+        |(_, from), (_, to)| {
+            *from == MemSpace::Path && *to == MemSpace::Path
+        },
+        |_, _| 1u64
+    )
 }
 
 fn get_is_real(input: &str) -> (usize, usize) {
@@ -122,9 +98,7 @@ fn get_is_real(input: &str) -> (usize, usize) {
 
 fn run_part_two_sim(
     graph: &mut MemGraph,
-    // graph: &mut StableGraph<GridPos, u64, Undirected, usize>,
     corruptions: &Vec<GridPos>,
-    // pos_to_id: &HashMap<GridPos, NodeIndex<usize>>,
     start: NodeIndex<usize>,
     end: NodeIndex<usize>,
 ) -> Option<GridPos> {
