@@ -199,33 +199,36 @@ impl<T: GridCell> Grid<T> {
         &self,
         start: GridPos,
         edge_weight: impl Fn(&GridPos, &GridPos) -> Option<i64>
-    ) -> (HashMap<GridPos, i64>, HashMap<GridPos, Vec<GridPos>>) {
-        let mut distances = HashMap::with_capacity(self.rows() * self.cols());
-        let mut paths: HashMap<GridPos, Vec<GridPos>> = HashMap::with_capacity(self.rows() * self.cols());
+    ) -> HashMap<GridPos, (i64, Vec<GridPos>)> {
+        let mut dists_paths = HashMap::with_capacity(self.rows() * self.cols());
         let mut heap = BinaryHeap::new();
-        distances.insert(start, 0);
+        dists_paths.insert(start, (0, vec![]));
         heap.push((0i64, start));
         while let Some((cost, pos)) = heap.pop() {
-            if distances.contains_key(&pos) && cost > *distances.get(&pos).unwrap() {
+            if dists_paths.contains_key(&pos) && cost > dists_paths.get(&pos).unwrap().0 {
                 continue;
             }
             for neighbor in self.get_neighbors(pos) {
                 let edge = edge_weight(&pos, &neighbor);
                 if let Some(weight) = edge {
-                    if !distances.contains_key(&neighbor)
-                        || cost + weight < *distances.get(&neighbor).unwrap()
+                    if !dists_paths.contains_key(&neighbor)
+                        || cost + weight < dists_paths.get(&neighbor).unwrap().0
                     {
                         heap.push((cost + weight, neighbor));
-                        distances.entry(neighbor)
-                            .and_modify(|x| *x = cost + weight)
-                            .or_insert(cost + weight);
-                        paths.entry(neighbor)
-                            .and_modify(|x| x.push(pos))
-                            .or_insert(vec![pos]);
+                        dists_paths.entry(neighbor)
+                            .and_modify(|x| {
+                                x.0 = cost + weight;
+                                x.1 = vec![pos];
+                            })
+                            .or_insert((cost + weight, vec![pos]));
+                    } else if dists_paths.contains_key(&neighbor)
+                        && cost + weight == dists_paths.get(&neighbor).unwrap().0
+                    {
+                        dists_paths.get_mut(&neighbor).unwrap().1.push(pos);
                     }
                 }
             }
         }
-        (distances, paths)
+        dists_paths
     }
 }
