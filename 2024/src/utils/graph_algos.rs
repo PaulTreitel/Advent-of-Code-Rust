@@ -1,19 +1,80 @@
-use std::collections::{BinaryHeap, HashMap};
+use std::{collections::{BinaryHeap, HashMap}, hash::Hash, usize};
 
 use graph_builder::{DirectedNeighborsWithValues, UndirectedNeighborsWithValues};
 use petgraph::{
-    graph::{node_index, NodeIndex},
-    visit::{
+    graph::{node_index, NodeIndex}, prelude::StableGraph, visit::{
         depth_first_search,
         Control,
         DfsEvent,
+        GraphBase,
         GraphRef,
         IntoNeighbors,
         NodeCount,
         VisitMap,
         Visitable
-    }
+    }, EdgeType
 };
+
+pub struct GraphWrapper<NWeight, EWeight, EType>
+{
+    graph: StableGraph<NWeight, EWeight, EType, usize>,
+    vals_to_nodes: HashMap<NWeight, Vec<NodeIndex<usize>>>,
+}
+
+impl<NWeight, EWeight, EType> GraphWrapper<NWeight, EWeight, EType>
+where
+    StableGraph<NWeight, EWeight, EType, usize>:
+        GraphBase<NodeId = NodeIndex<usize>>,
+    NWeight: Clone + Eq + Hash,
+    EType: EdgeType,
+{
+    pub fn new(
+        graph: StableGraph<NWeight, EWeight, EType, usize> ,
+        val_to_id: HashMap<NWeight, Vec<NodeIndex<usize>>>,
+    ) -> Self {
+        Self { graph, vals_to_nodes: val_to_id }
+    }
+
+    pub fn dfs_get_path(
+        &self,
+        start: NodeIndex<usize>,
+        is_goal: impl Fn(NodeIndex<usize>) -> bool
+    ) -> Option<Vec<NWeight>> {
+        let path = dfs_get_path(&self.graph, start, is_goal)?;
+        let path = path.iter()
+            .map(|id| self.graph
+                .node_weight(node_index(*id))
+                .unwrap()
+                .clone()
+            )
+            .collect();
+        Some(path)
+    }
+
+    pub fn node_from_val(&self, val: &NWeight) -> Option<&Vec<NodeIndex<usize>>> {
+        self.vals_to_nodes.get(val)
+    }
+
+    pub fn vals_to_nodes(&self) -> &HashMap<NWeight, Vec<NodeIndex<usize>>> {
+        &self.vals_to_nodes
+    }
+
+    pub fn graph(&self) -> &StableGraph<NWeight, EWeight, EType, usize> {
+        &self.graph
+    }
+
+    pub fn remove_node(&mut self, n: NodeIndex<usize>) -> Option<NWeight> {
+        let val = self.graph.node_weight(n)?;
+        {
+            let x = self.vals_to_nodes.get_mut(val)?;
+            x.remove(x.iter().position(|a| *a == n)?);
+            if x.is_empty() {
+                self.vals_to_nodes.remove(val);
+            }
+        }
+        self.graph.remove_node(n)
+    }
+}
 
 pub fn dfs_get_path<G, VM>(
     graph: G,
@@ -22,7 +83,7 @@ pub fn dfs_get_path<G, VM>(
 ) -> Option<Vec<usize>>
 where
     VM: VisitMap<NodeIndex>,
-    G: GraphRef + Visitable<NodeId = NodeIndex<usize>, Map = VM> + IntoNeighbors + NodeCount
+    G: GraphRef + Visitable<NodeId = NodeIndex<usize>, Map = VM> + NodeCount + IntoNeighbors,
 {
     let mut goal_node= node_index(graph.node_count() + 1);
     let mut predecessor = vec![NodeIndex::end(); graph.node_count()];
