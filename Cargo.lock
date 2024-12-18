@@ -47,6 +47,7 @@ dependencies = [
  "dhat",
  "graph_builder",
  "num",
+ "petgraph",
  "pico-args",
  "regex",
  "tinyjson",
