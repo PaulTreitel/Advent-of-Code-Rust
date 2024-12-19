@@ -45,7 +45,6 @@ version = "0.11.0"
 dependencies = [
  "chrono",
  "dhat",
- "graph_builder",
  "num",
  "petgraph",
  "pico-args",
