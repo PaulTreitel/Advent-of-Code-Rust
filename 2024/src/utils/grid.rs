@@ -46,9 +46,14 @@ impl GridPos {
     }
 
     pub fn position_in_dir(&self, dir: Direction) -> Self {
+        let offset = dir.to_offset();
+        self.position_at_offset(offset.0, offset.1)
+    }
+
+    pub fn position_at_offset(&self, row_offset: i32, col_offset: i32) -> Self {
         Self {
-            row: (self.row as i32 + dir.to_offset().0) as usize,
-            col:  (self.col as i32 + dir.to_offset().1) as usize
+            row: (self.row as i32 + row_offset) as usize,
+            col: (self.col as i32 + col_offset) as usize
         }
     }
 
