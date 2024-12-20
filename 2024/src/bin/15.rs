@@ -80,14 +80,9 @@ pub fn part_two(input: &str) -> Option<u64> {
     // track robot by position, not grid value
     *warehouse.get_mut(&robot_pos).unwrap() = TilePartTwo::Empty;
 
-    let mut i = 0;
     for mv in moves {
-        make_move_part_two(&mut warehouse, &mut robot_pos, mv, &mut i);
-        if i > 50 {
-            break;
-        }
+        make_move_part_two(&mut warehouse, &mut robot_pos, mv);
     }
-    print_warehouse_two(&warehouse, &robot_pos);
 
     let warehouse = warehouse.grid_map(|_, t| TilePartOne::from_part_two(t));
     Some(sum_box_coord(&warehouse))
@@ -126,16 +121,12 @@ fn make_move_part_one(warehouse: &mut Grid<TilePartOne>, robot_pos: &mut GridPos
         return;
     }
     let box_end = scan.get(scan.len() - 1).unwrap().0.position_in_dir(dir);
-    // sanity check
-    if *warehouse.get(&box_end).unwrap() != TilePartOne::Empty {
-        panic!("found end of scan and it was {:?}", warehouse.get(&box_end).unwrap());
-    }
     *warehouse.get_mut(&box_end).unwrap() = TilePartOne::Box;
     *warehouse.get_mut(&new_pos).unwrap() = TilePartOne::Empty;
     *robot_pos = new_pos;
 }
 
-fn make_move_part_two(warehouse: &mut Grid<TilePartTwo>, robot_pos: &mut GridPos, dir: Direction, i: &mut i32) {
+fn make_move_part_two(warehouse: &mut Grid<TilePartTwo>, robot_pos: &mut GridPos, dir: Direction) {
     let new_pos = robot_pos.position_in_dir(dir);
     let target = *warehouse.get(&new_pos).unwrap();
     if target == TilePartTwo::Wall {
@@ -153,19 +144,12 @@ fn make_move_part_two(warehouse: &mut Grid<TilePartTwo>, robot_pos: &mut GridPos
         }
     };
 
-    println!("\n");
-    print_warehouse_two(warehouse, robot_pos);
-    println!("robot is at {}, need to push box at {} {:?}", robot_pos, target_box_pos, dir);
     if dir == Direction::Left || dir == Direction::Right {
         if can_push_box_left_right(warehouse, &target_box_pos, dir) {
-            *i += 1;
-            println!("can do it");
             push_box_left_right(warehouse, &target_box_pos, dir);
             *robot_pos = new_pos;
         }
     } else if can_push_box_up_down(warehouse, &target_box_pos, dir) {
-        *i += 1;
-        // println!("can do it");
         push_box_up_down(warehouse, &target_box_pos, dir);
         *warehouse.get_mut(&target_box_pos).unwrap() = TilePartTwo::Empty;
         *warehouse
@@ -287,13 +271,11 @@ fn can_push_box_left_right(
             box_pos.position_in_dir(dir).position_in_dir(dir)
         }
     };
-    println!("expected new box target space: {}", new_space);
     if !(warehouse.is_valid_cell(&new_space)
         && warehouse.is_valid_cell(&new_space.position_in_dir(Direction::Right))
     ) {
         return false;
     }
-    println!("valid!");
 
     match *warehouse.get(&new_space).unwrap() {
         TilePartTwo::Wall => false,
@@ -326,19 +308,6 @@ fn stretch_warehouse(warehouse: Grid<TilePartTwo>) -> Grid<TilePartTwo> {
         new_warehouse.push(stretched);
     }
     Grid::from(new_warehouse)
-}
-
-fn print_warehouse_two(warehouse: &Grid<TilePartTwo>, robot_pos: &GridPos) {
-    for r in 0..warehouse.rows() {
-        for c in 0..warehouse.cols() {
-            if r == robot_pos.row && c == robot_pos.col {
-                print!("@");
-            } else {
-                print!("{}", warehouse.get(&GridPos { row: r, col: c }).unwrap());
-            }
-        }
-        println!();
-    }
 }
 
 fn stretch_tile(t: &&TilePartTwo) -> Vec<TilePartTwo> {
@@ -420,11 +389,11 @@ mod tests {
         assert_eq!(result, Some(10092));
     }
 
-    // #[test]
-    // fn test_part_two_toy() {
-    //     let result = part_two(PART_TWO_TOY_EXAMPLE);
-    //     assert_eq!(result, Some(9021));
-    // }
+    #[test]
+    fn test_part_two_toy() {
+        let result = part_two(PART_TWO_TOY_EXAMPLE);
+        assert_eq!(result, Some(618));
+    }
 
     #[test]
     fn test_part_two() {
