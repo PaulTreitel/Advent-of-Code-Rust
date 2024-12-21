@@ -43,12 +43,12 @@ pub fn part_one(input: &str) -> Option<u64> {
     let end = GridPos::new(1, maze.cols() - 2);
     let maze = graph_from_grid(maze, &start);
 
-    let start_idx = *maze.node_from_val(&(start, Direction::Right)).unwrap().first().unwrap();
+    let start_idx = *maze.first_node_from_val(&(start, Direction::Right)).unwrap();
     let dists_paths = maze.dijkstra_with_path(start_idx);
 
     let mut end_nodes = vec![];
     for end_dir in ORTHOGONAL_DIRECTIONS {
-        if let Some(id) = maze.node_from_val(&(end, end_dir)) {
+        if let Some(id) = maze.nodes_from_val(&(end, end_dir)) {
             let id = id.first().unwrap();
             end_nodes.push(*id);
         }
@@ -65,12 +65,12 @@ pub fn part_two(input: &str) -> Option<u64> {
     let end = GridPos::new(1, maze.cols() - 2);
     let maze = graph_from_grid(maze, &start);
 
-    let start_idx = *maze.node_from_val(&(start, Direction::Right)).unwrap().first().unwrap();
+    let start_idx = *maze.first_node_from_val(&(start, Direction::Right)).unwrap();
     let dists_paths = maze.dijkstra_with_path(start_idx);
 
     let mut end_nodes = vec![];
     for end_dir in ORTHOGONAL_DIRECTIONS {
-        if let Some(id) = maze.node_from_val(&(end, end_dir)) {
+        if let Some(id) = maze.nodes_from_val(&(end, end_dir)) {
             let id = id.first().unwrap();
             end_nodes.push(*id);
         }

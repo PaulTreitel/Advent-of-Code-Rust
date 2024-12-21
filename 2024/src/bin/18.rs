@@ -67,13 +67,8 @@ fn parse_input(input: &str, side_len: usize) -> (Grid<MemSpace>, Vec<GridPos>) {
 }
 
 fn get_start_end(memgraph: &MemGraph, side_len: usize) -> (NodeIndex<usize>, NodeIndex<usize>) {
-    let start = *memgraph.node_from_val(&GridPos { row: 0, col: 0 })
-        .unwrap()
-        .first()
-        .unwrap();
-    let end = *memgraph.node_from_val(&GridPos { row: side_len - 1, col: side_len - 1 })
-        .unwrap()
-        .first()
+    let start = *memgraph.first_node_from_val(&GridPos { row: 0, col: 0 }).unwrap();
+    let end = *memgraph.first_node_from_val(&GridPos { row: side_len - 1, col: side_len - 1 })
         .unwrap();
     (start, end)
 }
@@ -103,7 +98,7 @@ fn run_part_two_sim(
     end: NodeIndex<usize>,
 ) -> Option<GridPos> {
     for corrupt in corruptions {
-        let remove_id = *graph.node_from_val(corrupt).unwrap().first().unwrap();
+        let remove_id = *graph.first_node_from_val(corrupt).unwrap();
         graph.remove_node(remove_id);
         let mut dfs = Dfs::new(&(*graph.graph()), start.into());
         let mut still_reachable = false;

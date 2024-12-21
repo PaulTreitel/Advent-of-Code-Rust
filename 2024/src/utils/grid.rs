@@ -82,6 +82,21 @@ impl GridPos {
         ]
             .iter().flatten().copied().collect()
     }
+
+    pub fn direction_to(&self, other: &Self) -> Option<Direction> {
+        let x = match (self.row.cmp(&other.row), self.col.cmp(&other.col)) {
+            (Ordering::Less, Ordering::Less) => Direction::DownRight,
+            (Ordering::Less, Ordering::Equal) => Direction::Down,
+            (Ordering::Less, Ordering::Greater) => Direction::DownLeft,
+            (Ordering::Equal, Ordering::Less) => Direction::Right,
+            (Ordering::Equal, Ordering::Equal) => return None,
+            (Ordering::Equal, Ordering::Greater) => Direction::Left,
+            (Ordering::Greater, Ordering::Less) => Direction::UpRight,
+            (Ordering::Greater, Ordering::Equal) => Direction::Up,
+            (Ordering::Greater, Ordering::Greater) => Direction::UpLeft,
+        };
+        Some(x)
+    }
 }
 
 impl Display for GridPos {

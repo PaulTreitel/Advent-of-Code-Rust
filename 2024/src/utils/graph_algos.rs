@@ -1,16 +1,13 @@
 use std::{collections::{BinaryHeap, HashMap}, hash::Hash, ops::Add};
 
 use petgraph::{
-    graph::{node_index, NodeIndex},
-    prelude::StableGraph,
-    visit::{
+    graph::{node_index, NodeIndex}, prelude::StableGraph, stable_graph::NodeIndices, visit::{
         depth_first_search,
         Control,
         DfsEvent,
         EdgeRef,
         GraphBase
-    },
-    EdgeType
+    }, EdgeType
 };
 
 pub type GWNodeIdx = NodeIndex<usize>;
@@ -30,9 +27,22 @@ where
 {
     pub fn new(
         graph: StableGraph<NWeight, EWeight, EType, usize> ,
-        val_to_id: HashMap<NWeight, Vec<GWNodeIdx>>,
+        vals_to_nodes: HashMap<NWeight, Vec<GWNodeIdx>>,
     ) -> Self {
-        Self { graph, vals_to_nodes: val_to_id }
+        Self { graph, vals_to_nodes }
+    }
+
+    pub fn from_nodes_edges(nodes: Vec<NWeight>, edges: Vec<(NWeight, NWeight, EWeight)>) -> Self {
+        let mut vals_to_nodes = HashMap::new();
+        let mut graph = StableGraph::<NWeight, EWeight, EType, usize>
+            ::with_capacity(nodes.len(), edges.len());
+            for node in nodes {
+                vals_to_nodes.insert(node.clone(), vec![graph.add_node(node)]);
+            }
+            for e in edges {
+                graph.add_edge(vals_to_nodes[&e.0][0], vals_to_nodes[&e.1][0], e.2);
+            }
+            GraphWrapper::new(graph, vals_to_nodes)
     }
 
     pub fn dfs_get_path(
@@ -70,8 +80,12 @@ where
         Some(path)
     }
 
-    pub fn node_from_val(&self, val: &NWeight) -> Option<&Vec<GWNodeIdx>> {
+    pub fn nodes_from_val(&self, val: &NWeight) -> Option<&Vec<GWNodeIdx>> {
         self.vals_to_nodes.get(val)
+    }
+
+    pub fn first_node_from_val(&self, val: &NWeight) -> Option<&GWNodeIdx> {
+        self.nodes_from_val(val)?.first()
     }
 
     pub fn vals_to_nodes(&self) -> &HashMap<NWeight, Vec<GWNodeIdx>> {
@@ -84,6 +98,10 @@ where
 
     pub fn node_weight(&self, n: GWNodeIdx) -> Option<&NWeight> {
         self.graph.node_weight(n)
+    }
+
+    pub fn node_indices(&self) -> NodeIndices<NWeight, usize> {
+        self.graph.node_indices()
     }
 
     pub fn remove_node(&mut self, n: GWNodeIdx) -> Option<NWeight> {
@@ -135,5 +153,47 @@ where
             }
         }
         dists_paths
+    }
+
+    pub fn full_paths_from_dijkstra(
+        &self,
+        dijkstra_result: HashMap<GWNodeIdx, (EWeight, Vec<GWNodeIdx>)>,
+        start: GWNodeIdx
+    ) -> HashMap<GWNodeIdx, Vec<Vec<GWNodeIdx>>> {
+        let mut full_paths: HashMap<GWNodeIdx, Vec<Vec<GWNodeIdx>>> = HashMap::new();
+        for end_node in dijkstra_result.keys() {
+            let mut to_visit = vec![(*end_node, vec![])];
+            while let Some((curr_node, mut path_thus_far)) = to_visit.pop() {
+                if curr_node == start {
+                    path_thus_far.reverse();
+                    full_paths
+                        .entry(*end_node)
+                        .and_modify(|x| x.push(path_thus_far.clone()))
+                        .or_insert(vec![path_thus_far]);
+                    continue;
+                }
+                if full_paths.contains_key(&curr_node) {
+                    let rest_of_paths = full_paths.get(&curr_node).unwrap();
+                    let mut paths_to_end_node = vec![];
+                    for p in rest_of_paths {
+                        let mut p = p.clone();
+                        p.extend(path_thus_far.iter().rev());
+                        paths_to_end_node.push(p);
+                    }
+                    full_paths
+                        .entry(*end_node)
+                        .and_modify(|x| x.extend(paths_to_end_node.clone()))
+                        .or_insert(paths_to_end_node);
+                    continue;
+                }
+
+                for from_node in &dijkstra_result.get(&curr_node).unwrap().1 {
+                    let mut new_path = path_thus_far.clone();
+                    new_path.push(curr_node);
+                    to_visit.push((*from_node, new_path));
+                }
+            }
+        }
+        full_paths
     }
 }
