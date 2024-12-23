@@ -1,7 +1,7 @@
 use std::{collections::{BinaryHeap, HashMap}, hash::Hash, ops::Add};
 
 use petgraph::{
-    graph::{node_index, NodeIndex}, prelude::StableGraph, stable_graph::NodeIndices, visit::{
+    graph::{node_index, NodeIndex}, prelude::StableGraph, stable_graph::{Neighbors, NodeIndices}, visit::{
         depth_first_search,
         Control,
         DfsEvent,
@@ -102,6 +102,14 @@ where
 
     pub fn node_indices(&self) -> NodeIndices<NWeight, usize> {
         self.graph.node_indices()
+    }
+
+    pub fn neighbors(&self, n: GWNodeIdx) -> Neighbors<'_, EWeight, usize> {
+        self.graph.neighbors(n)
+    }
+
+    pub fn contains_edge(&self, a: GWNodeIdx, b: GWNodeIdx) -> bool {
+        self.graph.contains_edge(a, b)
     }
 
     pub fn remove_node(&mut self, n: GWNodeIdx) -> Option<NWeight> {
