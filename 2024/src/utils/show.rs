@@ -18,24 +18,29 @@ pub fn pretty_print_grid<T: GridCell>(grid: &Grid<T>) {
     pretty_print_2d_vecs(&grid.grid_clone());
 }
 
-pub fn pretty_print_hmap<K: Debug, V: Debug>(h: &HashMap<K, V>, long_values: bool) {
-    pretty_print_hmap_internal(h, long_values, "");
+pub fn pretty_print_hmap<K: Debug, V: Debug>(h: &HashMap<K, V>, long_values: bool, newline: bool) {
+    pretty_print_hmap_internal(h, long_values, "", newline);
 }
 
 pub fn pretty_print_hmap_of_hmaps<K: Debug, KK: Debug, V: Debug>(
     h: &HashMap<K, HashMap<KK, V>>,
-    long_values: bool
+    long_values: bool,
+    newline: bool
 ) {
     for (k, hmap) in h {
         println!("{:?} ->", k);
-        pretty_print_hmap_internal(hmap, long_values, "\t");
+        pretty_print_hmap_internal(hmap, long_values, "\t", false);
+        if newline {
+            println!();
+        }
     }
 }
 
 fn pretty_print_hmap_internal<K: Debug, V: Debug>(
     h: &HashMap<K, V>,
     long_values: bool,
-    prefix: &str
+    prefix: &str,
+    newline: bool
 ) {
     for (k, v) in h {
         if long_values {
@@ -43,6 +48,9 @@ fn pretty_print_hmap_internal<K: Debug, V: Debug>(
         } else {
             println!("{}{:?} -> {:?}", prefix, k, v);
         }
+    }
+    if newline {
+        println!();
     }
 }
 

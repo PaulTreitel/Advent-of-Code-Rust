@@ -3,7 +3,7 @@ use std::{collections::HashMap, u64};
 use advent_of_code_2024::utils::{
     direction::Direction as Dir,
     graph_algos::{GWNodeIdx, GraphWrapper},
-    parse::{self, split_by_all_chars, to_first_char}
+    parse::{self, split_by_all_chars, to_first_char}, show
 };
 use petgraph::Directed;
 
@@ -55,8 +55,12 @@ pub fn part_one(input: &str) -> Option<u64> {
     let mut score = 0;
     let codes = parse_input(input);
     let (numeric_graph, num_dir_map) = numeric_graph();
+    println!("numeric cell to node mapping");
+    show::pretty_print_hmap(numeric_graph.vals_to_nodes(), false, true);
     let numeric_paths = get_paths(&numeric_graph, &num_dir_map);
+    println!();
     let (dir_graph, dir_dir_map) = directional_graph();
+    println!("dir paths\n\n");
     let dir_paths = get_paths(&dir_graph, &dir_dir_map);
 
     for code in codes {
@@ -65,13 +69,13 @@ pub fn part_one(input: &str) -> Option<u64> {
             &numeric_paths,
             &dir_graph,
             &dir_paths,
-            &dir_dir_map,
             &code
         );
         let code_numeric = code[0..3].iter()
             .collect::<String>()
             .parse::<u64>()
             .unwrap();
+        println!("shortest len is {}, code numeric is {}", shortest_len, code_numeric);
         score += shortest_len * code_numeric;
     }
     Some(score)
@@ -90,47 +94,64 @@ fn get_code_path_len(
     numeric_paths: &KeypadPaths,
     dir_graph: &KeypadGraph,
     dir_paths: &KeypadPaths,
-    dir_map: &HashMap<(char, char), Dir>,
     code: &Vec<char>,
 ) -> u64 {
     let mut min_len = u64::MAX;
     let mut states = vec![State::start_state()];
+    println!();
     for cell in code {
         let mut new_states = vec![];
         for state in &states {
+            // println!("finding paths to numeric cell {}, dir paths:", cell);
+            // show::pretty_print_hmap(numeric_paths, true);
+            // all possible numeric robot paths to get to numeric position `cell`
             let numeric_paths = paths_to_numeric_cell(state, numeric_graph, numeric_paths, *cell);
 
+            // all possible 1st order robot paths to get to directional
+            // positions requried to move and activate numeric robot to achieve
+            // it reaching `cell`
             let mut first_order_paths = vec![];
+            let mut first_order_endpoint= state.first_order_pos;
             for path in numeric_paths {
-                let first_path = get_first_order_paths(state, dir_graph, dir_paths, path);
+                let path: Vec<_> = path.iter().map(|x| Some(*x)).collect();
+                let (first_path, first_endpoint) = get_directional_paths(
+                    state,
+                    dir_graph,
+                    dir_paths,
+                    &path
+                );
                 first_order_paths.extend(first_path);
+                first_order_endpoint = first_endpoint;
             }
-            let first_order_endpoint = directional_endpoint(
-                dir_graph,
-                dir_map,
-                state.first_order_pos,
-                &first_order_paths[0]
-            );
+            // let first_order_endpoint = directional_endpoint(
+            //     dir_graph,
+            //     dir_map,
+            //     state.first_order_pos,
+            //     &first_order_paths[0]
+            // );
 
+            // all possible 2nd order robot paths to get to directional
+            // positions required to move and activate 1st order robot to &c, &c
             let mut second_order_paths = vec![];
+            let mut second_order_endpoint = state.second_order_pos;
             for path in first_order_paths {
-                let second_path = get_second_order_paths(state, dir_graph, dir_paths, &path);
+                let (second_path, second_endpoint) = get_directional_paths(
+                    state,
+                    dir_graph,
+                    dir_paths,
+                    &path
+                );
                 second_order_paths.extend(second_path);
+                second_order_endpoint = second_endpoint;
             }
-            let second_order_endpoint = directional_endpoint(
-                dir_graph,
-                dir_map,
-                state.second_order_pos,
-                &second_order_paths[0]
-            );
+            // let second_order_endpoint = directional_endpoint(
+            //     dir_graph,
+            //     dir_map,
+            //     state.second_order_pos,
+            //     &second_order_paths[0]
+            // );
 
-            let mut my_keypresses = vec![];
-            for path in second_order_paths {
-                let my_presses = get_second_order_paths(state, dir_graph, dir_paths, &path);
-                my_keypresses.extend(my_presses);
-            }
-
-            let new_path_lens: Vec<u64> = my_keypresses.iter()
+            let new_path_lens: Vec<u64> = second_order_paths.iter()
                 .map(|x| x.len() as u64)
                 .collect();
             for path_len in new_path_lens {
@@ -147,6 +168,7 @@ fn get_code_path_len(
     }
 
     for state in states {
+        println!("min len update: min_len {}, move len {}", min_len, state.moves_made);
         min_len = std::cmp::min(min_len, state.moves_made);
     }
     min_len
@@ -176,27 +198,57 @@ fn directional_endpoint(
     *dir_graph.node_weight(curr_node).unwrap()
 }
 
-fn get_second_order_paths(
+fn get_directional_paths(
     state: &State,
     dir_graph: &KeypadGraph,
     dir_paths: &KeypadPaths,
-    dir_path: &Vec<Option<Dir>>
-) -> Vec<Vec<Option<Dir>>> {
-    todo!();
-}
-
-fn get_first_order_paths(
-    state: &State,
-    dir_graph: &KeypadGraph,
-    dir_paths: &KeypadPaths,
-    numeric_path: &Vec<Dir>
-) -> Vec<Vec<Option<Dir>>> {
+    path_of_prev_robot: &Vec<Option<Dir>>
+) -> (Vec<Vec<Option<Dir>>>, char) {
     // First order robot needs to hit directional buttons to move numeric robot,
     // then hit activate to get it to press the number. If, during that process,
     // it's already on the correct directional button, just hit activate.
     let mut first_order_paths = vec![];
+    let mut curr_pos = state.first_order_pos;
+    for (dir_idx, prev_robot_dir) in path_of_prev_robot.iter().enumerate() {
+        let target = {
+            if let Some(prev_dir) = prev_robot_dir {
+                dir_to_key(*prev_dir)
+            } else {
+                'A'
+            }
+        };
+        if curr_pos == target {
+            extend_paths(&mut first_order_paths, dir_idx, vec![None]);
+            continue;
+        }
 
-    first_order_paths
+        let curr_node = *dir_graph.first_node_from_val(&curr_pos).unwrap();
+        let target_node = *dir_graph.first_node_from_val(&curr_pos).unwrap();
+        // paths to get to the directional node ('^', '>', etc)
+        let paths = &dir_paths[&(curr_node, target_node)];
+        for path in paths {
+            let mut path: Vec<_> = path.iter().map(|x| Some(*x)).collect();
+            path.push(None);
+            extend_paths(&mut first_order_paths, dir_idx, path);
+        }
+        curr_pos = target;
+    }
+
+    (first_order_paths, curr_pos)
+}
+
+fn extend_paths(
+    base_paths: &mut Vec<Vec<Option<Dir>>>,
+    dir_idx: usize,
+    val: Vec<Option<Dir>>
+) {
+    if dir_idx == 0 {
+        base_paths.push(val);
+    } else {
+        for p_idx in 0..base_paths.len() {
+            base_paths[p_idx].extend(val.clone());
+        }
+    }
 }
 
 fn paths_to_numeric_cell<'a>(
@@ -205,9 +257,11 @@ fn paths_to_numeric_cell<'a>(
     numeric_paths: &'a KeypadPaths,
     target: char,
 ) -> &'a Vec<Vec<Dir>> {
-    let target = *numeric_graph.first_node_from_val(&target).unwrap();
+    let target_node = *numeric_graph.first_node_from_val(&target).unwrap();
     let start_node = *numeric_graph.first_node_from_val(&state.numeric_pos).unwrap();
-    numeric_paths.get(&(start_node, target)).unwrap()
+    println!("path to numeric cell: starting at {} (node {:?}), targeting {} (node {:?})",
+        state.numeric_pos, start_node, target, target_node);
+    numeric_paths.get(&(start_node, target_node)).unwrap()
 }
 
 fn dir_to_key(d: Dir) -> char {
@@ -224,19 +278,33 @@ fn numeric_graph() -> (KeypadGraph, HashMap<(char, char), Dir>) {
     let nodes = vec!['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', 'A'];
     let edges = vec![
         ('7', '8', 1),
+        ('8', '7', 1),
         ('7', '4', 1),
+        ('4', '7', 1),
         ('8', '9', 1),
+        ('9', '8', 1),
         ('8', '5', 1),
+        ('5', '8', 1),
         ('9', '6', 1),
+        ('6', '9', 1),
         ('4', '5', 1),
+        ('5', '4', 1),
         ('4', '1', 1),
+        ('1', '4', 1),
         ('5', '2', 1),
+        ('2', '5', 1),
         ('5', '6', 1),
+        ('6', '5', 1),
         ('1', '2', 1),
+        ('2', '1', 1),
         ('2', '3', 1),
+        ('3', '2', 1),
         ('2', '0', 1),
+        ('0', '2', 1),
         ('3', 'A', 1),
+        ('A', '3', 1),
         ('0', 'A', 1),
+        ('A', '0', 1),
     ];
     let dir_map = vec![
         (('7', '8'), Dir::Left),
@@ -304,9 +372,15 @@ fn directional_graph() -> (KeypadGraph, HashMap<(char, char), Dir>) {
 fn get_paths(graph: &KeypadGraph, dir_map: &HashMap<(char, char), Dir>) -> KeypadPaths {
     let mut all_paths = HashMap::new();
     for start_node in graph.node_indices() {
+        println!("get_paths: dijkstra from {:?}", start_node);
         let paths_from_start = graph.dijkstra_with_path(start_node);
         let dijkstra_paths = graph.full_paths_from_dijkstra(paths_from_start, start_node);
+        println!("full paths:");
+        show::pretty_print_hmap(&dijkstra_paths, true, true);
         for (end_node, paths_to_end) in dijkstra_paths {
+            if end_node == start_node {
+                continue;
+            }
             add_new_paths(graph, dir_map, &mut all_paths, start_node, end_node, &paths_to_end);
         }
     }
