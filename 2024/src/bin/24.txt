@@ -1,0 +1,57 @@
+z18
+z39
+z40
+z41
+z42
+z43
+
+
+z10 = x10 AND y10, should be D x10 
+	x10 XOR y10 = kck (A)
+	kck AND skm = sst (C)
+	x10 AND y10 = z10 (D)
+	kck XOR skm = vcf (output)
+	sst OR vcf = fgb (carry)
+	--> swap vcf and z10
+z11:
+	x11 XOR y11 = bmd (A)
+	bmd AND fgb = jgv (C)
+	x11 AND y11 = gvd (D)
+	bmd XOR fgb = z11 (output)
+	jgv OR gvd = gvj (carry)
+	--> screwed up bc of swapped z10 carry
+z17
+	jjf must be carry-in
+	x17 XOR y17 = qjg (A) correct
+	qjg AND jjf = z17 (C) -> fhg
+	x17 AND y17 = qjn (D) correct
+	qjg XOR jjf = fhg (output) -> z17
+	qjn OR fhg = jfb (carry)
+	--> swap z17 and fhg
+z18
+	presumably screwed by z17 
+z35
+	x35 XOR y35 = fsq (A)
+	jsn AND dvb = ftc (C)
+	x35 AND y35 = dvb (D) correct
+	dvb XOR jsn = z35 (output)
+	fsq OR ftc = bwc (carry)
+	--> swap fsq and dvb
+z39
+	x39 XOR y39 = kmh (A)
+	kmh AND mnd = wrj (C)
+	x39 AND y39 = rvd (D)
+	kmh XOR mnd = tnc (output)
+	rvd OR wrj = z39 (carry)
+	-> swap z39 and tnc
+
+z45 = fvb OR hqp
+z39 = rvd OR wrj
+z17 = qjg AND jjf
+
+
+A = x XOR y
+C = A AND carry
+D = x AND y
+output = A XOR carry
+carry = C OR D
