@@ -2,20 +2,24 @@ use std::{collections::{HashMap, HashSet}, fmt::{Debug, Write}};
 
 use super::grid::{Grid, GridCell};
 
-pub fn pretty_print_2d_vecs<T: Debug>(v: &Vec<Vec<T>>) {
+pub fn pretty_print_2d_vecs<T: Debug>(v: &Vec<Vec<T>>, long_values: bool) {
     println!("[");
     for row in v {
         let p = row.iter().fold(String::new(), |mut s, t| {
             let _ = write!(s, "{:?}, ", t);
             s
         });
-        println!("[{}]", &p[..p.len() - 2]);
+        if long_values {
+            println!("\t[{}]", &p[..p.len() - 2]);
+        } else {
+            println!("[{}]", &p[..p.len() - 2]);
+        }
     }
     println!("]");
 }
 
-pub fn pretty_print_grid<T: GridCell>(grid: &Grid<T>) {
-    pretty_print_2d_vecs(&grid.grid_clone());
+pub fn pretty_print_grid<T: GridCell>(grid: &Grid<T>, long_values: bool) {
+    pretty_print_2d_vecs(&grid.grid_clone(), long_values);
 }
 
 pub fn pretty_print_hmap<K: Debug, V: Debug>(h: &HashMap<K, V>, long_values: bool, newline: bool) {
