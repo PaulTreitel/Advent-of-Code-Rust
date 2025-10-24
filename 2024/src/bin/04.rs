@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/4
 use advent_of_code_2024::utils::{
     direction::ALL_DOWN_DIRECTION,
     grid::{Grid, GridPos},

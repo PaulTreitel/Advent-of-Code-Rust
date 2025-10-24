@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/23
 use std::collections::HashSet;
 
 use advent_of_code_2024::utils::graph_algos::{GWNodeIdx, GraphWrapper};

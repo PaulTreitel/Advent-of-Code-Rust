@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2022/day/3
 advent_of_code_2022::solution!(3);
 
 pub fn part_one(input: &str) -> Option<u32> {

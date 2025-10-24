@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/9
 advent_of_code_2024::solution!(9);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/14
 use std::{cmp::Ordering, collections::HashSet};
 
 use regex::Regex;

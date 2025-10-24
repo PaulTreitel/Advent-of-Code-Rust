@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2022/day/22
 advent_of_code_2022::solution!(22);
 
 use std::{cmp::max, collections::{HashMap, HashSet}};

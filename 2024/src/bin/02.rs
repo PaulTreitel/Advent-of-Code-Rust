@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/2
 use advent_of_code_2024::utils::parse;
 
 advent_of_code_2024::solution!(2);

@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/17
 use std::{iter::zip, u64};
 
 advent_of_code_2024::solution!(17);

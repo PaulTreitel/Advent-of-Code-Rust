@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2022/day/7
 advent_of_code_2022::solution!(7);
 
 use std::{collections::HashMap, path::PathBuf};

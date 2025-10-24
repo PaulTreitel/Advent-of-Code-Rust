@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/19
 use std::collections::HashMap;
 
 use regex::Regex;

@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/YEAR_NUMBER/day/DAY_NUMBER
 advent_of_code_YEAR_NUMBER::solution!(DAY_NUMBER);
 
 pub fn part_one(input: &str) -> Option<u64> {

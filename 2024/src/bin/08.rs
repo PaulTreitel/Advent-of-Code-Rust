@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/8
 use std::collections::{HashMap, HashSet};
 
 use advent_of_code_2024::utils::{

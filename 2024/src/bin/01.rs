@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/1
 use std::collections::HashMap;
 
 use advent_of_code_2024::utils::parse;

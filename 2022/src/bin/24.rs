@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2022/day/24
 advent_of_code_2022::solution!(24);
 
 use std::collections::HashSet;

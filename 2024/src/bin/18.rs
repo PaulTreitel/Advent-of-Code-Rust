@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/18
 use advent_of_code_2024::utils::{graph_algos::GraphWrapper, grid::{Grid, GridPos}};
 
 use petgraph::{algo::dijkstra, graph::NodeIndex, visit::Dfs, Undirected};

@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/25
 use advent_of_code_2024::utils::{grid::Grid, parse};
 
 advent_of_code_2024::solution!(25);

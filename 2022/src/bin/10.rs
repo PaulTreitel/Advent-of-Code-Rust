@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2022/day/10
 advent_of_code_2022::solution!(10);
 
 const SPECIAL_CYCLES: [usize; 6] = [20, 60, 100, 140, 180, 220];

@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/7
 use advent_of_code_2024::utils::parse;
 use regex::Regex;
 

@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2024/day/15
 use std::fmt::Display;
 
 use advent_of_code_2024::utils::{direction::Direction, grid::{Grid, GridPos}};
