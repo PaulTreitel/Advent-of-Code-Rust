@@ -85,7 +85,7 @@ fn get_input_path(day: Day) -> String {
 }
 
 fn get_puzzle_path(day: Day) -> String {
-    format!("data/puzzles/{day}.md")
+    format!("puzzles/{day}.md")
 }
 
 fn build_args(command: &str, args: &[String], day: Day) -> Vec<String> {
