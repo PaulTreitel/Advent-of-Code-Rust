@@ -19,12 +19,12 @@ target/
 
 data/inputs/*
 !data/inputs/.keep
-puzzles/*
-!puzzles/.keep
+data/puzzles/*
+!data/puzzles/.keep
 */data/inputs/*
 !*/data/inputs/.keep
-*/puzzles/*
-!*/puzzles/.keep
+*/data/puzzles/*
+!*/data/puzzles/.keep
 
 # Dhat
 dhat-heap.json
