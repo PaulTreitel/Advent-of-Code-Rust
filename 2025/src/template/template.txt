@@ -1,0 +1,32 @@
+advent_of_code_2025::solution!(DAY_NUMBER);
+
+pub fn part_one(input: &str) -> Option<u64> {
+    None
+}
+
+pub fn part_two(input: &str) -> Option<u64> {
+    None
+}
+
+fn parse_input(input: &str) -> () {
+    todo!()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_one() {
+        let input = advent_of_code_2025::template::read_file("examples", DAY);
+        let result = part_one(&input);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_part_two() {
+        let input = advent_of_code_2025::template::read_file("examples", DAY);
+        let result = part_two(&input);
+        assert_eq!(result, None);
+    }
+}
