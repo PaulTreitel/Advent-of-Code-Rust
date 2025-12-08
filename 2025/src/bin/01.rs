@@ -1,3 +1,4 @@
+// Solving https://adventofcode.com/2025/day/1
 advent_of_code_2025::solution!(1);
 use advent_of_code_2025::utils::direction::Direction;
 use num::abs;
