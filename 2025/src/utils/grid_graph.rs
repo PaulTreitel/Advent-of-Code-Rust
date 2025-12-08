@@ -1,126 +1,141 @@
-use std::{cmp::Ordering, collections::{BinaryHeap, HashMap, HashSet, VecDeque}};
+use std::{
+    cmp::Ordering,
+    collections::{BinaryHeap, HashMap, HashSet, VecDeque},
+};
 
-use petgraph::{graph::node_index, prelude::StableGraph, visit::NodeIndexable, Directed, EdgeType, Undirected};
+use petgraph::{
+    graph::node_index, prelude::StableGraph, visit::NodeIndexable, Directed, EdgeType, Undirected,
+};
 
-use super::{graph_algos::GraphWrapper, grid::{Grid, GridCell, GridPos}};
+use super::{
+    graph_algos::GraphWrapper,
+    grid::{Grid, GridCell, GridPos},
+};
+
+struct GraphSearchData<T> {
+    start: GridPos,
+    has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+    matches: fn(&GridPos, &T) -> bool,
+    only_first: bool,
+    continue_on_match: bool,
+}
 
 impl<T: GridCell> Grid<T> {
-
     /* BFS/DFS Methods */
 
     pub fn bfs_first_match(
         &self,
         start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        matches: impl Fn(&GridPos, &T) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        matches: fn(&GridPos, &T) -> bool,
     ) -> Option<(usize, GridPos)> {
-        self.bfs(start, has_edge, matches, true, false)
-            .first().copied()
+        let searcher = GraphSearchData {
+            start,
+            has_edge,
+            matches,
+            only_first: true,
+            continue_on_match: false,
+        };
+        self.bfs(&searcher).first().copied()
     }
 
     pub fn bfs_all_matches(
         &self,
         start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        matches: impl Fn(&GridPos, &T) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        matches: fn(&GridPos, &T) -> bool,
     ) -> Vec<(usize, GridPos)> {
-        self.bfs(start, has_edge, matches, false, false)
+        let searcher = GraphSearchData {
+            start,
+            has_edge,
+            matches,
+            only_first: false,
+            continue_on_match: false,
+        };
+        self.bfs(&searcher)
     }
 
     pub fn dfs_first_match(
         &self,
         start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        matches: impl Fn(&GridPos, &T) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        matches: fn(&GridPos, &T) -> bool,
     ) -> Option<(usize, GridPos)> {
-        self.dfs(start, has_edge, matches, true, false)
-            .first().copied()
+        let searcher = GraphSearchData {
+            start,
+            has_edge,
+            matches,
+            only_first: true,
+            continue_on_match: false,
+        };
+        self.dfs(&searcher).first().copied()
     }
 
     pub fn dfs_all_matches(
         &self,
         start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        matches: impl Fn(&GridPos, &T) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        matches: fn(&GridPos, &T) -> bool,
     ) -> Vec<(usize, GridPos)> {
-        self.dfs(start, has_edge, matches, false, false)
+        let searcher = GraphSearchData {
+            start,
+            has_edge,
+            matches,
+            only_first: false,
+            continue_on_match: false,
+        };
+        self.dfs(&searcher)
     }
 
     pub fn bfs_dfs_full(
         &self,
         start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
     ) -> HashMap<GridPos, (usize, &T)> {
-        let mut all: Vec<(usize, GridPos)> = self
-            .bfs(start, has_edge, |_, _| true, false, true)
-            .iter()
-            .map(|(i, p)| (*i, *p))
-            .collect();
+        let searcher = GraphSearchData {
+            start,
+            has_edge,
+            matches: |_, _| true,
+            only_first: false,
+            continue_on_match: true,
+        };
+        let mut all: Vec<(usize, GridPos)> =
+            self.bfs(&searcher).iter().map(|(i, p)| (*i, *p)).collect();
         all.sort_by(Grid::<T>::bfs_dfs_result_sort);
         all.dedup_by(|a, b| a.1 == b.1);
-        all
-            .iter()
+        all.iter()
             .map(|(i, pos)| (*pos, (*i, self.get(pos).unwrap())))
             .collect()
     }
 
     /* Helper Methods For BFS/DFS */
 
-    fn bfs(
-        &self,
-        start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        matches: impl Fn(&GridPos, &T) -> bool,
-        only_find_first: bool,
-        continue_on_match: bool,
-    ) -> Vec<(usize, GridPos)> {
+    fn bfs(&self, searcher: &GraphSearchData<T>) -> Vec<(usize, GridPos)> {
         self.bfs_dfs_internal(
-            start,
-            has_edge,
-            matches,
-            only_find_first,
-            continue_on_match,
+            searcher,
             VecDeque::new(),
             |s, i| s.push_back(i),
-            |s| s.pop_front())
+            |s| s.pop_front(),
+        )
     }
 
-    fn dfs(
-        &self,
-        start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        matches: impl Fn(&GridPos, &T) -> bool,
-        only_find_first: bool,
-        continue_on_match: bool,
-    ) -> Vec<(usize, GridPos)> {
-        self.bfs_dfs_internal(
-            start,
-            has_edge,
-            matches,
-            only_find_first,
-            continue_on_match,
-            Vec::new(),
-            |s, i| s.push(i),
-            |s| s.pop())
+    fn dfs(&self, searcher: &GraphSearchData<T>) -> Vec<(usize, GridPos)> {
+        self.bfs_dfs_internal(&searcher, Vec::new(), |s, i| s.push(i), |s| s.pop())
     }
 
     fn bfs_dfs_internal<Storage: Clone>(
         &self,
-        start: GridPos,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        matches: impl Fn(&GridPos, &T) -> bool,
-        only_find_first: bool,
-        continue_on_match: bool,
+        gsdata: &GraphSearchData<T>,
         queue_stack: Storage,
-        qs_insert: impl Fn(&mut Storage, (usize, GridPos)),
-        qs_remove: impl Fn(&mut Storage) -> Option<(usize, GridPos)>,
+        qs_insert: fn(&mut Storage, (usize, GridPos)),
+        qs_remove: fn(&mut Storage) -> Option<(usize, GridPos)>,
     ) -> Vec<(usize, GridPos)> {
         let mut result = vec![];
         let mut visited = HashSet::new();
         let mut queue_stack = queue_stack.clone();
-        qs_insert(&mut queue_stack, (0, start));
-        if matches(&start, self.get(&start).unwrap()) {
-            result.push((0, start));
+        qs_insert(&mut queue_stack, (0, gsdata.start));
+        if (gsdata.matches)(&gsdata.start, self.get(&gsdata.start).unwrap()) {
+            result.push((0, gsdata.start));
         }
         while let Some((i, pos)) = qs_remove(&mut queue_stack) {
             visited.insert(pos);
@@ -131,16 +146,16 @@ impl<T: GridCell> Grid<T> {
                     continue;
                 }
                 let new = (&new_pos, self.get(&new_pos).unwrap());
-                if !has_edge(curr, new) {
+                if !(gsdata.has_edge)(curr, new) {
                     continue;
                 }
-                if matches(&new_pos, new.1) {
-                    if only_find_first {
+                if (gsdata.matches)(&new_pos, new.1) {
+                    if gsdata.only_first {
                         return vec![(i + 1, *new.0)];
                     } else {
                         result.push((i + 1, *new.0));
                     }
-                    if continue_on_match && !visited.contains(&new_pos) {
+                    if gsdata.continue_on_match && !visited.contains(&new_pos) {
                         qs_insert(&mut queue_stack, (i + 1, new_pos));
                     }
                 } else if !visited.contains(&new_pos) {
@@ -170,7 +185,10 @@ impl<T: GridCell> Grid<T> {
             while split_by_row.len() <= pos.row {
                 split_by_row.push(vec![]);
             }
-            split_by_row.get_mut(pos.row).unwrap().push((val.0, pos, val.1));
+            split_by_row
+                .get_mut(pos.row)
+                .unwrap()
+                .push((val.0, pos, val.1));
         }
         for row in 0..split_by_row.len() {
             split_by_row
@@ -178,11 +196,9 @@ impl<T: GridCell> Grid<T> {
                 .unwrap()
                 .sort_by(|(_, p1, _), (_, p2, _)| p1.cmp(p2));
         }
-        let new_grid: Vec<Vec<(usize, &T)>> = split_by_row.iter()
-            .map(|row| row.iter()
-                .map(|(i, _, val)| (*i, *val))
-                .collect()
-            )
+        let new_grid: Vec<Vec<(usize, &T)>> = split_by_row
+            .iter()
+            .map(|row| row.iter().map(|(i, _, val)| (*i, *val)).collect())
             .collect();
         Grid::from(new_grid)
     }
@@ -200,7 +216,7 @@ impl<T: GridCell> Grid<T> {
     pub fn dijkstra(
         &self,
         start: GridPos,
-        edge_weight: impl Fn(&GridPos, &GridPos) -> Option<i64>
+        edge_weight: fn(&GridPos, &GridPos) -> Option<i64>,
     ) -> HashMap<GridPos, (i64, Vec<GridPos>)> {
         let mut dists_paths = HashMap::with_capacity(self.rows() * self.cols());
         let mut heap = BinaryHeap::new();
@@ -217,7 +233,8 @@ impl<T: GridCell> Grid<T> {
                         || cost + weight < dists_paths.get(&neighbor).unwrap().0
                     {
                         heap.push((cost + weight, neighbor));
-                        dists_paths.entry(neighbor)
+                        dists_paths
+                            .entry(neighbor)
                             .and_modify(|x| {
                                 x.0 = cost + weight;
                                 x.1 = vec![pos];
@@ -238,18 +255,18 @@ impl<T: GridCell> Grid<T> {
 
     pub fn to_undir_graph<EWeight>(
         &self,
-        is_node: impl Fn(GridPos, T) -> bool,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
+        is_node: fn(GridPos, T) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        edge_weight: fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
     ) -> GraphWrapper<GridPos, EWeight, Undirected> {
         self.to_graph_internal::<EWeight, Undirected>(false, is_node, has_edge, edge_weight)
     }
 
     pub fn to_dir_graph<EWeight>(
         &self,
-        is_node: impl Fn(GridPos, T) -> bool,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
+        is_node: fn(GridPos, T) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        edge_weight: fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
     ) -> GraphWrapper<GridPos, EWeight, Directed> {
         self.to_graph_internal::<EWeight, Directed>(true, is_node, has_edge, edge_weight)
     }
@@ -257,9 +274,9 @@ impl<T: GridCell> Grid<T> {
     fn to_graph_internal<EWeight, EType: EdgeType>(
         &self,
         directed: bool,
-        is_node: impl Fn(GridPos, T) -> bool,
-        has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
-        edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
+        is_node: fn(GridPos, T) -> bool,
+        has_edge: fn((&GridPos, &T), (&GridPos, &T)) -> bool,
+        edge_weight: fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
     ) -> GraphWrapper<GridPos, EWeight, EType> {
         let num_cells = self.rows() * self.cols();
         let mut pos_to_node_id = HashMap::with_capacity(num_cells);
