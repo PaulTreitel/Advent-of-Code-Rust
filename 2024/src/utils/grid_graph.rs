@@ -237,7 +237,7 @@ impl<T: GridCell> Grid<T> {
     /* Converting into a petgraph */
 
     pub fn to_undir_graph<EWeight>(
-        self,
+        &self,
         is_node: impl Fn(GridPos, T) -> bool,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
@@ -246,7 +246,7 @@ impl<T: GridCell> Grid<T> {
     }
 
     pub fn to_dir_graph<EWeight>(
-        self,
+        &self,
         is_node: impl Fn(GridPos, T) -> bool,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
         edge_weight: impl Fn((&GridPos, &T), (&GridPos, &T)) -> EWeight,
@@ -255,7 +255,7 @@ impl<T: GridCell> Grid<T> {
     }
 
     fn to_graph_internal<EWeight, EType: EdgeType>(
-        self,
+        &self,
         directed: bool,
         is_node: impl Fn(GridPos, T) -> bool,
         has_edge: impl Fn((&GridPos, &T), (&GridPos, &T)) -> bool,
@@ -289,7 +289,7 @@ impl<T: GridCell> Grid<T> {
                 if let Some(neighbor_id) = pos_to_node_id.get(&neighbor_pos) {
                     let neighbor_id = *neighbor_id.first().unwrap();
                     if directed || !graph.contains_edge(neighbor_id, node_id.into()) {
-                        graph.add_edge(node_id.into(), neighbor_id.into(), weight);
+                        graph.add_edge(node_id.into(), neighbor_id, weight);
                     }
                 }
             }

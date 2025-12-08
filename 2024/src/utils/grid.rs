@@ -76,10 +76,8 @@ impl GridPos {
     }
 
     pub fn get_all_neighbors(&self) -> Vec<GridPos> {
-        vec![
-            self.get_orthogonal_neighbors(),
-            self.get_diag_neighbors()
-        ]
+        [self.get_orthogonal_neighbors(),
+            self.get_diag_neighbors()]
             .iter().flatten().copied().collect()
     }
 

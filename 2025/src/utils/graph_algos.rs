@@ -100,7 +100,7 @@ where
         self.graph.node_weight(n)
     }
 
-    pub fn node_indices(&self) -> NodeIndices<NWeight, usize> {
+    pub fn node_indices(&self) -> NodeIndices<'_, NWeight, usize> {
         self.graph.node_indices()
     }
 
