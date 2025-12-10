@@ -54,3 +54,21 @@ pub fn split_by_all_chars(s: &str) -> Vec<&str> {
 pub fn to_first_char(s: &&str) -> char {
     s.chars().next().unwrap()
 }
+
+pub fn lines_to_columns(input: &str) -> Vec<String> {
+    let mut columns = vec![];
+    for line in input.lines() {
+        let line = line.as_bytes();
+        if columns.len() == 0 {
+            for _ in 0..line.len() {
+                columns.push(vec![]);
+            }
+        }
+        for i in 0..line.len() {
+            columns[i].push((line[i] as char).to_string());
+        }
+    }
+    columns.iter()
+        .map(|vc| vc.join(""))
+        .collect()
+}
